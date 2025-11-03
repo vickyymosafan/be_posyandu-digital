@@ -148,6 +148,31 @@ export class ConflictError extends AppError {
 }
 
 /**
+ * RateLimitError - 429 Too Many Requests
+ * 
+ * Digunakan ketika user melebihi rate limit.
+ * Contoh: Too many login attempts, API rate limit exceeded
+ * 
+ * @property retryAfter - Optional waktu dalam detik sebelum dapat mencoba lagi
+ * 
+ * @example
+ * throw new RateLimitError('Terlalu banyak percobaan login');
+ * throw new RateLimitError('Terlalu banyak percobaan, coba lagi nanti', 900);
+ */
+export class RateLimitError extends AppError {
+  public readonly retryAfter?: number;
+
+  constructor(
+    message: string = 'Terlalu banyak percobaan, coba lagi nanti',
+    retryAfter?: number
+  ) {
+    super(message, 429);
+    this.retryAfter = retryAfter;
+    Object.setPrototypeOf(this, RateLimitError.prototype);
+  }
+}
+
+/**
  * InternalServerError - 500 Internal Server Error
  * 
  * Digunakan untuk unexpected errors yang tidak dapat di-handle.

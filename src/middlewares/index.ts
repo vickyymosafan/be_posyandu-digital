@@ -16,3 +16,6 @@ export * from './validateMiddleware';
 
 // Error Handler Middleware
 export * from './errorHandler';
+
+// Rate Limiter Middleware
+export * from './rateLimiter';
