@@ -10,3 +10,6 @@ export * from './authMiddleware';
 
 // Role Guard Middleware
 export * from './roleGuard';
+
+// Validate Middleware
+export * from './validateMiddleware';
