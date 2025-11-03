@@ -7,3 +7,6 @@
 
 // Auth Service
 export * from './authService';
+
+// User Service
+export * from './userService';
