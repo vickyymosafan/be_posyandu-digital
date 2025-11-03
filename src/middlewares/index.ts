@@ -7,3 +7,6 @@
 
 // Auth Middleware
 export * from './authMiddleware';
+
+// Role Guard Middleware
+export * from './roleGuard';
