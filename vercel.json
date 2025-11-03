@@ -1,5 +1,8 @@
 {
   "version": 2,
+  "buildCommand": "npm run prisma:generate && npm run build",
+  "installCommand": "npm install",
+  "outputDirectory": "dist",
   "builds": [
     {
       "src": "dist/serverless.js",
@@ -14,5 +17,6 @@
   ],
   "env": {
     "NODE_ENV": "production"
-  }
+  },
+  "regions": ["sin1"]
 }
