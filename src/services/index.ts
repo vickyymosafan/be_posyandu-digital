@@ -10,3 +10,6 @@ export * from './authService';
 
 // User Service
 export * from './userService';
+
+// Lansia Service
+export * from './lansiaService';
