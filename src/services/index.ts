@@ -13,3 +13,6 @@ export * from './userService';
 
 // Lansia Service
 export * from './lansiaService';
+
+// Pemeriksaan Service
+export * from './pemeriksaanService';
