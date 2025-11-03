@@ -1,9 +1,9 @@
 /**
  * Error Handler Middleware
- * 
+ *
  * Global error handler untuk Express application.
  * Menangkap semua errors yang di-throw atau di-pass ke next(error).
- * 
+ *
  * Prinsip yang diterapkan:
  * - Single Responsibility: Hanya handle error formatting dan response
  * - Open/Closed: Dapat handle error types baru tanpa modifikasi
@@ -15,12 +15,7 @@
 
 import { Request, Response, NextFunction } from 'express';
 import { ZodError } from 'zod';
-import {
-  AppError,
-  ValidationError,
-  NotFoundError,
-  isOperationalError,
-} from '../utils/errors';
+import { AppError, ValidationError, NotFoundError, isOperationalError } from '../utils/errors';
 import logger from '../utils/logger';
 
 /**
@@ -35,7 +30,7 @@ interface ErrorResponse {
 /**
  * Format Zod validation errors
  * Mengubah ZodError menjadi format yang user-friendly
- * 
+ *
  * @param error - ZodError instance
  * @returns Formatted error details
  */
@@ -44,7 +39,7 @@ const formatZodError = (error: ZodError): Record<string, string[]> => {
 
   error.errors.forEach((err) => {
     const path = err.path.join('.') || 'general';
-    const message = err.message;
+    const { message } = err;
 
     if (!formatted[path]) {
       formatted[path] = [];
@@ -59,7 +54,7 @@ const formatZodError = (error: ZodError): Record<string, string[]> => {
 /**
  * Determine apakah error details harus di-include dalam response
  * Di production, hanya include details untuk operational errors
- * 
+ *
  * @param error - Error instance
  * @returns true jika details harus di-include
  */
@@ -76,7 +71,7 @@ const shouldIncludeDetails = (error: Error): boolean => {
 /**
  * Get error message yang aman untuk di-expose ke client
  * Di production, gunakan generic message untuk non-operational errors
- * 
+ *
  * @param error - Error instance
  * @param defaultMessage - Default message jika error message tidak aman
  * @returns Safe error message
@@ -98,27 +93,27 @@ const getSafeErrorMessage = (error: Error, defaultMessage: string): string => {
 
 /**
  * Global Error Handler Middleware
- * 
+ *
  * Middleware ini harus dipasang sebagai middleware terakhir di Express app.
  * Menangkap semua errors yang tidak di-handle oleh middleware sebelumnya.
- * 
+ *
  * Proses:
  * 1. Identify error type (custom error, Zod error, atau generic error)
  * 2. Extract status code dan error details
  * 3. Log error dengan level yang sesuai
  * 4. Format error response
  * 5. Send response ke client
- * 
+ *
  * Error Handling Strategy:
  * - Custom AppError: Use statusCode dan message dari error
  * - ZodError: Return 400 dengan validation details
  * - Generic Error: Return 500 dengan generic message
- * 
+ *
  * Security Considerations:
  * - Di production, tidak expose stack traces
  * - Di production, gunakan generic message untuk unexpected errors
  * - Tidak expose internal implementation details
- * 
+ *
  * @param err - Error object
  * @param req - Express request object
  * @param res - Express response object
@@ -133,7 +128,7 @@ export const errorHandler = (
   // Default values
   let statusCode = 500;
   let errorMessage = 'Terjadi kesalahan pada sistem';
-  let errorDetails: any = undefined;
+  let errorDetails: any;
 
   // Log context untuk semua errors
   const logContext = {
@@ -226,23 +221,16 @@ export const errorHandler = (
 
 /**
  * Not Found Handler
- * 
+ *
  * Middleware untuk handle 404 errors (route tidak ditemukan).
  * Harus dipasang sebelum errorHandler tapi setelah semua routes.
- * 
+ *
  * @param req - Express request object
  * @param res - Express response object
  * @param next - Express next function
  */
-export const notFoundHandler = (
-  req: Request,
-  _res: Response,
-  next: NextFunction
-): void => {
-  const error = new NotFoundError(
-    `Route ${req.method} ${req.path} tidak ditemukan`,
-    'Route'
-  );
+export const notFoundHandler = (req: Request, _res: Response, next: NextFunction): void => {
+  const error = new NotFoundError(`Route ${req.method} ${req.path} tidak ditemukan`, 'Route');
 
   logger.warn('Route not found', {
     path: req.path,

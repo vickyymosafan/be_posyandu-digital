@@ -1,9 +1,9 @@
 /**
  * User Service
- * 
+ *
  * Service untuk business logic manajemen user (petugas dan admin).
  * Bertanggung jawab untuk CRUD user, update profile, dan password management.
- * 
+ *
  * Prinsip yang diterapkan:
  * - Single Responsibility: Hanya handle logic manajemen user
  * - Dependency Inversion: Depend pada userRepository abstraction
@@ -46,34 +46,32 @@ export interface CreatePetugasData {
 
 /**
  * Membuat petugas baru
- * 
+ *
  * Proses:
  * 1. Validasi email belum terdaftar
  * 2. Hash password dengan bcrypt
  * 3. Create user dengan role PETUGAS dan status aktif true
  * 4. Return user data tanpa password
- * 
+ *
  * @param data - Data petugas yang akan dibuat
  * @returns User data tanpa password
  * @throws Error jika email sudah terdaftar
  */
-export const createPetugas = async (
-  data: CreatePetugasData
-): Promise<UserResponse> => {
+export const createPetugas = async (data: CreatePetugasData): Promise<UserResponse> => {
   try {
     // Validasi email belum terdaftar
     const existingUserCount = await countUsersByEmail(data.email);
-    
+
     if (existingUserCount > 0) {
       logger.warn('Gagal membuat petugas: Email sudah terdaftar', {
         email: data.email,
       });
       throw new Error('Email sudah terdaftar');
     }
-    
+
     // Hash password dengan bcrypt
     const hashedPassword = await bcrypt.hash(data.kataSandi, BCRYPT_SALT_ROUNDS);
-    
+
     // Create user dengan role PETUGAS
     const user = await createUser({
       nama: data.nama,
@@ -82,15 +80,15 @@ export const createPetugas = async (
       role: Role.PETUGAS,
       aktif: true,
     });
-    
+
     logger.info('Petugas berhasil dibuat', {
       userId: user.id,
       email: user.email,
       nama: user.nama,
     });
-    
+
     // Return user tanpa password
-    const { kataSandi, ...userWithoutPassword } = user;
+    const { kataSandi: _kataSandi, ...userWithoutPassword } = user;
     return userWithoutPassword;
   } catch (error) {
     // Re-throw error untuk di-handle oleh caller
@@ -100,24 +98,24 @@ export const createPetugas = async (
 
 /**
  * Mengambil semua petugas
- * 
+ *
  * @returns Array of petugas tanpa password
  */
 export const getAllPetugas = async (): Promise<UserResponse[]> => {
   try {
     // Get semua user dengan role PETUGAS
     const users = await findAllUsers(Role.PETUGAS);
-    
+
     logger.debug('Mengambil daftar petugas', {
       count: users.length,
     });
-    
+
     // Remove password dari setiap user
     const usersWithoutPassword = users.map((user) => {
-      const { kataSandi, ...userWithoutPassword } = user;
+      const { kataSandi: _kataSandi, ...userWithoutPassword } = user;
       return userWithoutPassword;
     });
-    
+
     return usersWithoutPassword;
   } catch (error) {
     logger.error('Gagal mengambil daftar petugas', {
@@ -129,38 +127,35 @@ export const getAllPetugas = async (): Promise<UserResponse[]> => {
 
 /**
  * Update status aktif petugas
- * 
+ *
  * @param id - ID petugas
  * @param aktif - Status aktif baru
  * @returns User data yang telah diupdate tanpa password
  * @throws Error jika user tidak ditemukan
  */
-export const updateStatusPetugas = async (
-  id: number,
-  aktif: boolean
-): Promise<UserResponse> => {
+export const updateStatusPetugas = async (id: number, aktif: boolean): Promise<UserResponse> => {
   try {
     // Validasi user exists
     const existingUser = await findUserById(id);
-    
+
     if (!existingUser) {
       logger.warn('Gagal update status petugas: User tidak ditemukan', {
         userId: id,
       });
       throw new Error('User tidak ditemukan');
     }
-    
+
     // Update status
     const updatedUser = await updateUserStatus(id, aktif);
-    
+
     logger.info('Status petugas berhasil diupdate', {
       userId: id,
       aktif,
       email: updatedUser.email,
     });
-    
+
     // Return user tanpa password
-    const { kataSandi, ...userWithoutPassword } = updatedUser;
+    const { kataSandi: _kataSandi, ...userWithoutPassword } = updatedUser;
     return userWithoutPassword;
   } catch (error) {
     throw error;
@@ -169,38 +164,35 @@ export const updateStatusPetugas = async (
 
 /**
  * Update nama user
- * 
+ *
  * @param userId - ID user
  * @param nama - Nama baru
  * @returns User data yang telah diupdate tanpa password
  * @throws Error jika user tidak ditemukan
  */
-export const updateNama = async (
-  userId: number,
-  nama: string
-): Promise<UserResponse> => {
+export const updateNama = async (userId: number, nama: string): Promise<UserResponse> => {
   try {
     // Validasi user exists
     const existingUser = await findUserById(userId);
-    
+
     if (!existingUser) {
       logger.warn('Gagal update nama: User tidak ditemukan', {
         userId,
       });
       throw new Error('User tidak ditemukan');
     }
-    
+
     // Update nama
     const updatedUser = await updateUser(userId, { nama });
-    
+
     logger.info('Nama user berhasil diupdate', {
       userId,
       namaLama: existingUser.nama,
       namaBaru: nama,
     });
-    
+
     // Return user tanpa password
-    const { kataSandi, ...userWithoutPassword } = updatedUser;
+    const { kataSandi: _kataSandi, ...userWithoutPassword } = updatedUser;
     return userWithoutPassword;
   } catch (error) {
     throw error;
@@ -209,13 +201,13 @@ export const updateNama = async (
 
 /**
  * Update password user
- * 
+ *
  * Proses:
  * 1. Validasi user exists
  * 2. Verifikasi password lama dengan bcrypt
  * 3. Hash password baru dengan bcrypt
  * 4. Update password di database
- * 
+ *
  * @param userId - ID user
  * @param kataSandiLama - Password lama untuk verifikasi
  * @param kataSandiBaru - Password baru
@@ -230,20 +222,17 @@ export const updatePassword = async (
   try {
     // Validasi user exists
     const existingUser = await findUserById(userId);
-    
+
     if (!existingUser) {
       logger.warn('Gagal update password: User tidak ditemukan', {
         userId,
       });
       throw new Error('User tidak ditemukan');
     }
-    
+
     // Verifikasi password lama
-    const isPasswordValid = await bcrypt.compare(
-      kataSandiLama,
-      existingUser.kataSandi
-    );
-    
+    const isPasswordValid = await bcrypt.compare(kataSandiLama, existingUser.kataSandi);
+
     if (!isPasswordValid) {
       logger.warn('Gagal update password: Password lama tidak cocok', {
         userId,
@@ -251,22 +240,22 @@ export const updatePassword = async (
       });
       throw new Error('Kata sandi lama tidak cocok');
     }
-    
+
     // Hash password baru
     const hashedPassword = await bcrypt.hash(kataSandiBaru, BCRYPT_SALT_ROUNDS);
-    
+
     // Update password
     const updatedUser = await updateUser(userId, {
       kataSandi: hashedPassword,
     });
-    
+
     logger.info('Password user berhasil diupdate', {
       userId,
       email: updatedUser.email,
     });
-    
+
     // Return user tanpa password
-    const { kataSandi, ...userWithoutPassword } = updatedUser;
+    const { kataSandi: _kataSandi, ...userWithoutPassword } = updatedUser;
     return userWithoutPassword;
   } catch (error) {
     throw error;

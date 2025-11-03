@@ -1,9 +1,9 @@
 /**
  * Express Application Setup
- * 
+ *
  * File ini bertanggung jawab untuk setup dan konfigurasi Express application.
  * Mengimplementasikan layered architecture dengan separation of concerns.
- * 
+ *
  * Prinsip yang diterapkan:
  * - Single Responsibility: Hanya setup Express app dan routing
  * - Dependency Inversion: Depend pada controllers dan middlewares abstractions
@@ -53,9 +53,9 @@ import logger from './utils/logger';
 
 /**
  * Create Express Application
- * 
+ *
  * Setup Express app dengan semua middlewares dan routes.
- * 
+ *
  * @returns Configured Express application
  */
 const createApp = (): Application => {
@@ -67,7 +67,7 @@ const createApp = (): Application => {
 
   /**
    * Helmet - Security headers
-   * 
+   *
    * Mengatur berbagai HTTP headers untuk keamanan:
    * - X-Content-Type-Options: nosniff
    * - X-Frame-Options: DENY
@@ -78,7 +78,7 @@ const createApp = (): Application => {
 
   /**
    * CORS - Cross-Origin Resource Sharing
-   * 
+   *
    * Konfigurasi:
    * - origin: Frontend URL dari environment variable
    * - credentials: true untuk allow cookies
@@ -121,7 +121,7 @@ const createApp = (): Application => {
 
   /**
    * Login Rate Limiter
-   * 
+   *
    * Proteksi dari brute force attacks pada login endpoint.
    * Konfigurasi:
    * - 5 attempts per 15 menit per IP address
@@ -140,10 +140,10 @@ const createApp = (): Application => {
 
   /**
    * Health Check
-   * 
+   *
    * Endpoint untuk monitoring dan health checks.
    * Tidak memerlukan autentikasi.
-   * 
+   *
    * @route GET /health
    * @returns Status OK dengan timestamp
    */
@@ -161,7 +161,7 @@ const createApp = (): Application => {
 
   /**
    * API Router
-   * 
+   *
    * Semua API routes dimulai dengan prefix /api
    * Menggunakan Express Router untuk modular routing
    */
@@ -173,7 +173,7 @@ const createApp = (): Application => {
 
   /**
    * Authentication Routes
-   * 
+   *
    * Endpoints untuk autentikasi user (login, logout).
    * Login endpoint protected dengan rate limiter.
    */
@@ -181,27 +181,22 @@ const createApp = (): Application => {
 
   /**
    * POST /api/auth/login
-   * 
+   *
    * Login user dengan email dan kata sandi.
    * Protected dengan rate limiter (5 attempts per 15 menit).
-   * 
+   *
    * @middleware loginRateLimiter - Rate limiting
    * @middleware validate - Validasi request body
    * @controller authController.login
    */
-  authRouter.post(
-    '/login',
-    loginRateLimiter,
-    validate(loginRequestSchema),
-    authController.login
-  );
+  authRouter.post('/login', loginRateLimiter, validate(loginRequestSchema), authController.login);
 
   /**
    * POST /api/auth/logout
-   * 
+   *
    * Logout user dengan menghapus JWT cookie.
    * Memerlukan autentikasi.
-   * 
+   *
    * @middleware authMiddleware - Autentikasi JWT
    * @controller authController.logout
    */
@@ -215,7 +210,7 @@ const createApp = (): Application => {
 
   /**
    * Profile Routes
-   * 
+   *
    * Endpoints untuk manajemen profil user.
    * Semua endpoints memerlukan autentikasi.
    */
@@ -226,9 +221,9 @@ const createApp = (): Application => {
 
   /**
    * GET /api/profile
-   * 
+   *
    * Get profil user yang sedang login.
-   * 
+   *
    * @middleware authMiddleware - Autentikasi JWT
    * @controller profilController.getProfile
    */
@@ -236,24 +231,20 @@ const createApp = (): Application => {
 
   /**
    * PATCH /api/profile/nama
-   * 
+   *
    * Update nama user yang sedang login.
-   * 
+   *
    * @middleware authMiddleware - Autentikasi JWT
    * @middleware validate - Validasi request body
    * @controller profilController.updateNamaController
    */
-  profileRouter.patch(
-    '/nama',
-    validate(updateNamaSchema),
-    profilController.updateNamaController
-  );
+  profileRouter.patch('/nama', validate(updateNamaSchema), profilController.updateNamaController);
 
   /**
    * PATCH /api/profile/password
-   * 
+   *
    * Update password user yang sedang login.
-   * 
+   *
    * @middleware authMiddleware - Autentikasi JWT
    * @middleware validate - Validasi request body
    * @controller profilController.updatePasswordController
@@ -272,7 +263,7 @@ const createApp = (): Application => {
 
   /**
    * Petugas Routes
-   * 
+   *
    * Endpoints untuk manajemen petugas (CRUD).
    * Semua endpoints hanya dapat diakses oleh ADMIN.
    */
@@ -283,27 +274,23 @@ const createApp = (): Application => {
 
   /**
    * POST /api/petugas
-   * 
+   *
    * Create petugas baru.
    * Hanya dapat diakses oleh ADMIN.
-   * 
+   *
    * @middleware authMiddleware - Autentikasi JWT
    * @middleware roleGuard - Otorisasi role ADMIN
    * @middleware validate - Validasi request body
    * @controller petugasController.createPetugas
    */
-  petugasRouter.post(
-    '/',
-    validate(createPetugasSchema),
-    petugasController.createPetugas
-  );
+  petugasRouter.post('/', validate(createPetugasSchema), petugasController.createPetugas);
 
   /**
    * GET /api/petugas
-   * 
+   *
    * Get daftar semua petugas.
    * Hanya dapat diakses oleh ADMIN.
-   * 
+   *
    * @middleware authMiddleware - Autentikasi JWT
    * @middleware roleGuard - Otorisasi role ADMIN
    * @controller petugasController.getAllPetugas
@@ -312,10 +299,10 @@ const createApp = (): Application => {
 
   /**
    * PATCH /api/petugas/:id/status
-   * 
+   *
    * Update status aktif petugas.
    * Hanya dapat diakses oleh ADMIN.
-   * 
+   *
    * @middleware authMiddleware - Autentikasi JWT
    * @middleware roleGuard - Otorisasi role ADMIN
    * @middleware validate - Validasi request body
@@ -335,7 +322,7 @@ const createApp = (): Application => {
 
   /**
    * Lansia Routes
-   * 
+   *
    * Endpoints untuk manajemen data lansia.
    * Semua endpoints memerlukan autentikasi.
    * Dapat diakses oleh ADMIN dan PETUGAS.
@@ -347,24 +334,20 @@ const createApp = (): Application => {
 
   /**
    * POST /api/lansia
-   * 
+   *
    * Create data lansia baru dengan kode pasien unik.
-   * 
+   *
    * @middleware authMiddleware - Autentikasi JWT
    * @middleware validate - Validasi request body
    * @controller lansiaController.createLansia
    */
-  lansiaRouter.post(
-    '/',
-    validate(createLansiaSchema),
-    lansiaController.createLansia
-  );
+  lansiaRouter.post('/', validate(createLansiaSchema), lansiaController.createLansia);
 
   /**
    * GET /api/lansia
-   * 
+   *
    * Get daftar lansia atau filter by kode (query parameter).
-   * 
+   *
    * @middleware authMiddleware - Autentikasi JWT
    * @controller lansiaController.getLansia
    */
@@ -372,13 +355,23 @@ const createApp = (): Application => {
 
   /**
    * GET /api/lansia/:kode
-   * 
+   *
    * Get data lansia by kode pasien.
-   * 
+   *
    * @middleware authMiddleware - Autentikasi JWT
    * @controller lansiaController.getLansiaByKodeParam
    */
   lansiaRouter.get('/:kode', lansiaController.getLansiaByKodeParam);
+
+  /**
+   * GET /api/lansia/:kode/pemeriksaan
+   *
+   * Get riwayat pemeriksaan lansia by kode pasien.
+   *
+   * @middleware authMiddleware - Autentikasi JWT
+   * @controller lansiaController.getPemeriksaanByKode
+   */
+  lansiaRouter.get('/:kode/pemeriksaan', lansiaController.getPemeriksaanByKode);
 
   apiRouter.use('/lansia', lansiaRouter);
 
@@ -388,20 +381,15 @@ const createApp = (): Application => {
 
   /**
    * POST /api/find
-   * 
+   *
    * Find lansia dengan minimal data (quick lookup).
    * Endpoint terpisah untuk use case spesifik.
-   * 
+   *
    * @middleware authMiddleware - Autentikasi JWT
    * @middleware validate - Validasi request body
    * @controller lansiaController.findLansia
    */
-  apiRouter.post(
-    '/find',
-    authMiddleware,
-    validate(findLansiaSchema),
-    lansiaController.findLansia
-  );
+  apiRouter.post('/find', authMiddleware, validate(findLansiaSchema), lansiaController.findLansia);
 
   // --------------------------------------------
   // PEMERIKSAAN ROUTES
@@ -409,11 +397,11 @@ const createApp = (): Application => {
 
   /**
    * Pemeriksaan Routes
-   * 
+   *
    * Endpoints untuk pencatatan pemeriksaan kesehatan lansia.
    * Semua endpoints memerlukan autentikasi.
    * Dapat diakses oleh ADMIN dan PETUGAS.
-   * 
+   *
    * Routes menggunakan :kode sebagai parameter untuk identifikasi lansia.
    */
   const pemeriksaanRouter = express.Router();
@@ -423,9 +411,9 @@ const createApp = (): Application => {
 
   /**
    * POST /api/lansia/:kode/pemeriksaan/fisik
-   * 
+   *
    * Create pemeriksaan fisik dengan kalkulasi BMI dan klasifikasi tekanan darah.
-   * 
+   *
    * @middleware authMiddleware - Autentikasi JWT
    * @middleware validate - Validasi request body
    * @controller pemeriksaanController.createPemeriksaanFisik
@@ -438,9 +426,9 @@ const createApp = (): Application => {
 
   /**
    * POST /api/lansia/:kode/pemeriksaan/kesehatan
-   * 
+   *
    * Create pemeriksaan kesehatan dengan klasifikasi nilai laboratorium.
-   * 
+   *
    * @middleware authMiddleware - Autentikasi JWT
    * @middleware validate - Validasi request body
    * @controller pemeriksaanController.createPemeriksaanKesehatan
@@ -453,10 +441,10 @@ const createApp = (): Application => {
 
   /**
    * POST /api/lansia/:kode/pemeriksaan
-   * 
+   *
    * Create pemeriksaan gabungan (fisik + kesehatan).
    * Endpoint fleksibel untuk pemeriksaan lengkap atau parsial.
-   * 
+   *
    * @middleware authMiddleware - Autentikasi JWT
    * @middleware validate - Validasi request body
    * @controller pemeriksaanController.createPemeriksaanGabungan
@@ -478,7 +466,7 @@ const createApp = (): Application => {
 
   /**
    * 404 Not Found Handler
-   * 
+   *
    * Handle requests ke routes yang tidak terdefinisi.
    * Harus ditempatkan setelah semua routes.
    */
@@ -501,10 +489,10 @@ const createApp = (): Application => {
 
   /**
    * Global Error Handler
-   * 
+   *
    * Handle semua errors yang terjadi di aplikasi.
    * Harus ditempatkan sebagai middleware terakhir.
-   * 
+   *
    * Error handler akan:
    * - Format error response secara konsisten
    * - Map custom error classes ke HTTP status codes

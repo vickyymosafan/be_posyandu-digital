@@ -1,9 +1,9 @@
 /**
  * Petugas Controller
- * 
+ *
  * Controller untuk handle HTTP requests terkait manajemen petugas.
  * Bertanggung jawab untuk CRUD petugas (admin only).
- * 
+ *
  * Prinsip yang diterapkan:
  * - Single Responsibility: Hanya handle HTTP logic untuk manajemen petugas
  * - Dependency Inversion: Depend pada userService abstraction
@@ -23,29 +23,29 @@ import logger from '../utils/logger';
 
 /**
  * Create Petugas Controller
- * 
+ *
  * Handle POST /api/petugas
- * 
+ *
  * Proses:
  * 1. Extract data petugas dari request body (sudah divalidasi oleh validateMiddleware)
  * 2. Call userService.createPetugas untuk membuat petugas baru
  * 3. Return data petugas yang telah dibuat tanpa password
- * 
+ *
  * Validasi:
  * - Request body divalidasi oleh validateMiddleware dengan createPetugasSchema
  * - Email harus unique (divalidasi di service layer)
  * - Password minimal 6 karakter
- * 
+ *
  * Security:
  * - Endpoint ini protected oleh authMiddleware dan roleGuard(ADMIN)
  * - Hanya ADMIN yang dapat membuat petugas baru
  * - Password di-hash dengan bcrypt sebelum disimpan
  * - Password tidak pernah di-return dalam response
- * 
+ *
  * @param req - Express request object dengan body: { nama, email, kataSandi }
  * @param res - Express response object
  * @param next - Express next function untuk error handling
- * 
+ *
  * @example
  * // Request
  * POST /api/petugas
@@ -56,7 +56,7 @@ import logger from '../utils/logger';
  *   "email": "petugas@posyandu.com",
  *   "kataSandi": "password123"
  * }
- * 
+ *
  * // Response (201 Created)
  * {
  *   "id": 2,
@@ -66,12 +66,12 @@ import logger from '../utils/logger';
  *   "aktif": true,
  *   "createdAt": "2025-11-03T10:00:00.000Z"
  * }
- * 
+ *
  * // Response (400 Bad Request) - email sudah terdaftar
  * {
  *   "error": "Email sudah terdaftar"
  * }
- * 
+ *
  * // Response (403 Forbidden) - bukan admin
  * {
  *   "error": "Akses ditolak"
@@ -126,27 +126,27 @@ export const createPetugas = async (
 
 /**
  * Get All Petugas Controller
- * 
+ *
  * Handle GET /api/petugas
- * 
+ *
  * Proses:
  * 1. Call userService.getAllPetugas untuk mengambil semua petugas
  * 2. Return array of petugas tanpa password
- * 
+ *
  * Security:
  * - Endpoint ini protected oleh authMiddleware dan roleGuard(ADMIN)
  * - Hanya ADMIN yang dapat melihat daftar petugas
  * - Password tidak pernah di-return dalam response
- * 
+ *
  * @param req - Express request object
  * @param res - Express response object
  * @param next - Express next function untuk error handling
- * 
+ *
  * @example
  * // Request
  * GET /api/petugas
  * Cookie: token=<admin_jwt_token>
- * 
+ *
  * // Response (200 OK)
  * [
  *   {
@@ -166,7 +166,7 @@ export const createPetugas = async (
  *     "createdAt": "2025-11-03T11:00:00.000Z"
  *   }
  * ]
- * 
+ *
  * // Response (403 Forbidden) - bukan admin
  * {
  *   "error": "Akses ditolak"
@@ -201,28 +201,28 @@ export const getAllPetugas = async (
 
 /**
  * Update Status Petugas Controller
- * 
+ *
  * Handle PATCH /api/petugas/:id/status
- * 
+ *
  * Proses:
  * 1. Extract petugas ID dari route params
  * 2. Extract status aktif dari request body (sudah divalidasi oleh validateMiddleware)
  * 3. Call userService.updateStatusPetugas untuk update status
  * 4. Return updated petugas data tanpa password
- * 
+ *
  * Validasi:
  * - Request body divalidasi oleh validateMiddleware dengan updateStatusPetugasSchema
  * - ID petugas harus valid dan exists (divalidasi di service layer)
- * 
+ *
  * Security:
  * - Endpoint ini protected oleh authMiddleware dan roleGuard(ADMIN)
  * - Hanya ADMIN yang dapat mengubah status petugas
  * - Password tidak pernah di-return dalam response
- * 
+ *
  * @param req - Express request object dengan params: { id } dan body: { aktif }
  * @param res - Express response object
  * @param next - Express next function untuk error handling
- * 
+ *
  * @example
  * // Request - Nonaktifkan petugas
  * PATCH /api/petugas/2/status
@@ -231,7 +231,7 @@ export const getAllPetugas = async (
  * {
  *   "aktif": false
  * }
- * 
+ *
  * // Response (200 OK)
  * {
  *   "id": 2,
@@ -241,12 +241,12 @@ export const getAllPetugas = async (
  *   "aktif": false,
  *   "createdAt": "2025-11-03T10:00:00.000Z"
  * }
- * 
+ *
  * // Response (404 Not Found) - petugas tidak ditemukan
  * {
  *   "error": "User tidak ditemukan"
  * }
- * 
+ *
  * // Response (403 Forbidden) - bukan admin
  * {
  *   "error": "Akses ditolak"
@@ -260,7 +260,7 @@ export const updateStatusPetugas = async (
   try {
     // Extract petugas ID dari route params
     const idParam = req.params.id;
-    
+
     // Validasi ID exists
     if (!idParam) {
       logger.warn('updateStatusPetugas: ID tidak ditemukan', {
@@ -268,11 +268,11 @@ export const updateStatusPetugas = async (
       });
       throw new ValidationError('ID petugas tidak ditemukan');
     }
-    
+
     const petugasId = parseInt(idParam, 10);
 
     // Validasi ID adalah number yang valid
-    if (isNaN(petugasId)) {
+    if (Number.isNaN(petugasId)) {
       logger.warn('updateStatusPetugas: ID tidak valid', {
         id: idParam,
         ip: req.ip,

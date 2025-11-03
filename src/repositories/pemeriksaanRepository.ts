@@ -1,9 +1,9 @@
 /**
  * Pemeriksaan Repository
- * 
+ *
  * Repository untuk data access layer Pemeriksaan model.
  * Bertanggung jawab untuk semua operasi database terkait Pemeriksaan.
- * 
+ *
  * Prinsip yang diterapkan:
  * - Single Responsibility: Hanya handle data access untuk Pemeriksaan
  * - Separation of Concerns: Tidak ada business logic, hanya database operations
@@ -15,7 +15,7 @@ import { prisma } from '../utils/prisma';
 
 /**
  * Membuat data pemeriksaan baru
- * 
+ *
  * @param data - Data pemeriksaan yang akan dibuat
  * @returns Pemeriksaan yang telah dibuat
  */
@@ -29,13 +29,11 @@ export const createPemeriksaan = async (
 
 /**
  * Mencari pemeriksaan berdasarkan ID
- * 
+ *
  * @param id - ID pemeriksaan
  * @returns Pemeriksaan jika ditemukan, null jika tidak
  */
-export const findPemeriksaanById = async (
-  id: number
-): Promise<Pemeriksaan | null> => {
+export const findPemeriksaanById = async (id: number): Promise<Pemeriksaan | null> => {
   return prisma.pemeriksaan.findUnique({
     where: { id },
     include: {
@@ -46,7 +44,7 @@ export const findPemeriksaanById = async (
 
 /**
  * Mengambil semua pemeriksaan untuk lansia tertentu
- * 
+ *
  * @param lansiaId - ID lansia
  * @param options - Options untuk filtering dan pagination (optional)
  * @returns Array of pemeriksaan
@@ -69,7 +67,7 @@ export const findPemeriksaanByLansiaId = async (
 
 /**
  * Mengambil pemeriksaan terbaru untuk lansia tertentu
- * 
+ *
  * @param lansiaId - ID lansia
  * @returns Pemeriksaan terbaru jika ada, null jika tidak
  */
@@ -84,7 +82,7 @@ export const findLatestPemeriksaanByLansiaId = async (
 
 /**
  * Mengambil semua pemeriksaan dengan filter tanggal
- * 
+ *
  * @param options - Options untuk filtering berdasarkan tanggal
  * @returns Array of pemeriksaan
  */
@@ -112,7 +110,7 @@ export const findPemeriksaanByDateRange = async (options: {
 
 /**
  * Update data pemeriksaan
- * 
+ *
  * @param id - ID pemeriksaan yang akan diupdate
  * @param data - Data yang akan diupdate
  * @returns Pemeriksaan yang telah diupdate
@@ -129,7 +127,7 @@ export const updatePemeriksaan = async (
 
 /**
  * Menghapus data pemeriksaan
- * 
+ *
  * @param id - ID pemeriksaan yang akan dihapus
  * @returns Pemeriksaan yang telah dihapus
  */
@@ -141,13 +139,11 @@ export const deletePemeriksaan = async (id: number): Promise<Pemeriksaan> => {
 
 /**
  * Menghitung jumlah pemeriksaan untuk lansia tertentu
- * 
+ *
  * @param lansiaId - ID lansia
  * @returns Jumlah pemeriksaan
  */
-export const countPemeriksaanByLansiaId = async (
-  lansiaId: number
-): Promise<number> => {
+export const countPemeriksaanByLansiaId = async (lansiaId: number): Promise<number> => {
   return prisma.pemeriksaan.count({
     where: { lansiaId },
   });

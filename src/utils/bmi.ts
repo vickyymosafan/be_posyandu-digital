@@ -1,9 +1,9 @@
 /**
  * Utility untuk kalkulasi dan klasifikasi Body Mass Index (BMI)
- * 
+ *
  * Menggunakan standar klasifikasi BMI Asia Pasifik (WHO Asia-Pacific)
  * yang lebih sesuai untuk populasi Asia dibandingkan standar WHO global.
- * 
+ *
  * Prinsip yang diterapkan:
  * - Single Responsibility: Fokus pada kalkulasi dan klasifikasi BMI
  * - Input Validation: Validasi range realistis untuk keamanan
@@ -13,7 +13,7 @@
 
 /**
  * Interface untuk hasil kalkulasi BMI
- * 
+ *
  * @property nilai - Nilai BMI yang dihitung (2 desimal)
  * @property kategori - Kategori BMI berdasarkan standar Asia Pasifik
  */
@@ -61,7 +61,7 @@ const KATEGORI_BMI = {
 
 /**
  * Validasi input tinggi badan
- * 
+ *
  * @param tinggiCm - Tinggi badan dalam cm
  * @throws Error jika tinggi di luar range valid
  */
@@ -71,21 +71,17 @@ function validasiTinggi(tinggiCm: number): void {
   }
 
   if (tinggiCm < VALIDASI.TINGGI_MIN) {
-    throw new Error(
-      `Tinggi badan tidak valid. Minimal ${VALIDASI.TINGGI_MIN} cm`
-    );
+    throw new Error(`Tinggi badan tidak valid. Minimal ${VALIDASI.TINGGI_MIN} cm`);
   }
 
   if (tinggiCm > VALIDASI.TINGGI_MAX) {
-    throw new Error(
-      `Tinggi badan tidak valid. Maksimal ${VALIDASI.TINGGI_MAX} cm`
-    );
+    throw new Error(`Tinggi badan tidak valid. Maksimal ${VALIDASI.TINGGI_MAX} cm`);
   }
 }
 
 /**
  * Validasi input berat badan
- * 
+ *
  * @param beratKg - Berat badan dalam kg
  * @throws Error jika berat di luar range valid
  */
@@ -95,21 +91,17 @@ function validasiBerat(beratKg: number): void {
   }
 
   if (beratKg < VALIDASI.BERAT_MIN) {
-    throw new Error(
-      `Berat badan tidak valid. Minimal ${VALIDASI.BERAT_MIN} kg`
-    );
+    throw new Error(`Berat badan tidak valid. Minimal ${VALIDASI.BERAT_MIN} kg`);
   }
 
   if (beratKg > VALIDASI.BERAT_MAX) {
-    throw new Error(
-      `Berat badan tidak valid. Maksimal ${VALIDASI.BERAT_MAX} kg`
-    );
+    throw new Error(`Berat badan tidak valid. Maksimal ${VALIDASI.BERAT_MAX} kg`);
   }
 }
 
 /**
  * Klasifikasi nilai BMI berdasarkan standar Asia Pasifik
- * 
+ *
  * Kategori BMI Asia Pasifik (WHO):
  * - < 17.0: Berat Badan Sangat Kurang
  * - 17.0 - 18.4: Berat Badan Kurang
@@ -118,7 +110,7 @@ function validasiBerat(beratKg: number): void {
  * - 25.0 - 29.9: Obesitas I
  * - 30.0 - 34.9: Obesitas II
  * - ≥ 35.0: Obesitas III
- * 
+ *
  * @param bmi - Nilai BMI yang akan diklasifikasikan
  * @returns Kategori BMI
  */
@@ -152,15 +144,15 @@ function klasifikasiBMI(bmi: number): string {
 
 /**
  * Menghitung Body Mass Index (BMI) dan mengklasifikasikannya
- * 
+ *
  * Formula BMI: berat (kg) / (tinggi (m))^2
  * Hasil dibulatkan ke 2 desimal
- * 
+ *
  * @param beratKg - Berat badan dalam kilogram (10-300 kg)
  * @param tinggiCm - Tinggi badan dalam centimeter (50-250 cm)
  * @returns Object berisi nilai BMI dan kategorinya
  * @throws Error jika input tidak valid
- * 
+ *
  * @example
  * ```typescript
  * const result = hitungBMI(60, 160);

@@ -1,9 +1,9 @@
 /**
  * Entry Point untuk Local Development
- * 
+ *
  * File ini adalah entry point untuk menjalankan aplikasi di local development.
  * Bertanggung jawab untuk start HTTP server dan listen pada port yang ditentukan.
- * 
+ *
  * Prinsip yang diterapkan:
  * - Single Responsibility: Hanya bertanggung jawab untuk start server
  * - Separation of Concerns: App configuration ada di app.ts
@@ -23,7 +23,7 @@ const PORT = process.env.PORT || 3001;
 
 /**
  * Start HTTP Server
- * 
+ *
  * Proses:
  * 1. Listen pada port yang ditentukan
  * 2. Log server info setelah berhasil start
@@ -50,7 +50,7 @@ const server = app.listen(PORT, () => {
 
 /**
  * Handle Server Errors
- * 
+ *
  * Handle errors yang terjadi saat server startup atau runtime.
  * Errors yang umum:
  * - EADDRINUSE: Port sudah digunakan
@@ -81,14 +81,14 @@ server.on('error', (error: NodeJS.ErrnoException) => {
 
 /**
  * Graceful Shutdown Handler
- * 
+ *
  * Handle SIGTERM dan SIGINT signals untuk graceful shutdown.
  * Proses:
  * 1. Log shutdown signal
  * 2. Stop accepting new connections
  * 3. Close existing connections
  * 4. Exit process
- * 
+ *
  * Graceful shutdown penting untuk:
  * - Menyelesaikan requests yang sedang diproses
  * - Cleanup resources (database connections, dll)
@@ -123,7 +123,7 @@ const gracefulShutdown = (signal: string) => {
 
 /**
  * Register Shutdown Handlers
- * 
+ *
  * SIGTERM: Termination signal (dari process manager seperti PM2, Docker)
  * SIGINT: Interrupt signal (Ctrl+C di terminal)
  */
@@ -132,15 +132,15 @@ process.on('SIGINT', () => gracefulShutdown('SIGINT'));
 
 /**
  * Handle Unhandled Promise Rejections
- * 
+ *
  * Catch unhandled promise rejections untuk prevent crash.
  * Log error dan exit process untuk restart oleh process manager.
  */
-process.on('unhandledRejection', (reason: any, promise: Promise<any>) => {
+process.on('unhandledRejection', (reason: unknown, promise: Promise<unknown>) => {
   logger.error('Unhandled Promise Rejection', {
-    reason: reason instanceof Error ? reason.message : reason,
+    reason: reason instanceof Error ? reason.message : String(reason),
     stack: reason instanceof Error ? reason.stack : undefined,
-    promise: promise.toString(),
+    promise: String(promise),
   });
 
   // Exit process untuk restart oleh process manager
@@ -149,7 +149,7 @@ process.on('unhandledRejection', (reason: any, promise: Promise<any>) => {
 
 /**
  * Handle Uncaught Exceptions
- * 
+ *
  * Catch uncaught exceptions untuk prevent crash.
  * Log error dan exit process untuk restart oleh process manager.
  */

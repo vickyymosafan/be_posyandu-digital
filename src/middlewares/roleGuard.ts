@@ -1,9 +1,9 @@
 /**
  * Role Guard Middleware
- * 
+ *
  * Middleware factory untuk otorisasi berdasarkan role user.
  * Memverifikasi bahwa user memiliki role yang diizinkan untuk mengakses endpoint.
- * 
+ *
  * Prinsip yang diterapkan:
  * - Single Responsibility: Hanya handle otorisasi berdasarkan role
  * - Open/Closed: Extensible melalui factory pattern tanpa modifikasi
@@ -20,29 +20,29 @@ import logger from '../utils/logger';
 
 /**
  * Role Guard Factory
- * 
+ *
  * Factory function yang menghasilkan middleware untuk role-based access control.
  * Middleware yang dihasilkan akan memverifikasi bahwa user memiliki salah satu
  * role yang diizinkan.
- * 
+ *
  * Proses:
  * 1. Verifikasi req.user exists (harus sudah di-set oleh authMiddleware)
  * 2. Verifikasi user.role ada dalam allowedRoles
  * 3. Return 403 jika role tidak sesuai
  * 4. Call next() jika role sesuai
- * 
+ *
  * Catatan:
  * - Middleware ini HARUS digunakan setelah authMiddleware
  * - authMiddleware bertanggung jawab untuk set req.user
  * - roleGuard hanya bertanggung jawab untuk verifikasi role
- * 
+ *
  * @param allowedRoles - Array of roles yang diizinkan mengakses endpoint
  * @returns Express middleware function
- * 
+ *
  * @example
  * // Hanya ADMIN yang dapat mengakses
  * router.post('/petugas', authMiddleware, roleGuard([Role.ADMIN]), createPetugas);
- * 
+ *
  * @example
  * // ADMIN dan PETUGAS dapat mengakses
  * router.get('/lansia', authMiddleware, roleGuard([Role.ADMIN, Role.PETUGAS]), getLansia);
@@ -57,7 +57,7 @@ export const roleGuard = (allowedRoles: Role[] | string[]) => {
   }
 
   // Convert allowedRoles ke array of strings untuk comparison
-  const allowedRolesStr = allowedRoles.map(role => String(role));
+  const allowedRolesStr = allowedRoles.map((role) => String(role));
 
   // Return middleware function
   return (req: Request, res: Response, next: NextFunction): void => {
@@ -70,7 +70,7 @@ export const roleGuard = (allowedRoles: Role[] | string[]) => {
           method: req.method,
           note: 'authMiddleware harus dijalankan sebelum roleGuard',
         });
-        
+
         res.status(401).json({
           error: 'Autentikasi diperlukan',
         });
@@ -127,9 +127,9 @@ export const roleGuard = (allowedRoles: Role[] | string[]) => {
 /**
  * Helper function untuk membuat roleGuard khusus ADMIN
  * Shortcut untuk roleGuard([Role.ADMIN])
- * 
+ *
  * @returns Express middleware function yang hanya mengizinkan ADMIN
- * 
+ *
  * @example
  * router.post('/petugas', authMiddleware, adminOnly(), createPetugas);
  */
@@ -138,9 +138,9 @@ export const adminOnly = () => roleGuard([Role.ADMIN]);
 /**
  * Helper function untuk membuat roleGuard yang mengizinkan semua authenticated users
  * Shortcut untuk roleGuard([Role.ADMIN, Role.PETUGAS])
- * 
+ *
  * @returns Express middleware function yang mengizinkan semua role
- * 
+ *
  * @example
  * router.get('/profile', authMiddleware, authenticated(), getProfile);
  */

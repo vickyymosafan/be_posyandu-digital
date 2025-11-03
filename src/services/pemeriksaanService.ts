@@ -1,9 +1,9 @@
 /**
  * Pemeriksaan Service
- * 
+ *
  * Service untuk business logic pemeriksaan kesehatan lansia.
  * Bertanggung jawab untuk create pemeriksaan dengan kalkulasi dan klasifikasi otomatis.
- * 
+ *
  * Prinsip yang diterapkan:
  * - Single Responsibility: Hanya handle logic pemeriksaan
  * - Dependency Inversion: Depend pada repository dan utility abstractions
@@ -64,14 +64,14 @@ export interface PemeriksaanGabunganData {
 
 /**
  * Create pemeriksaan fisik dengan kalkulasi BMI dan klasifikasi tekanan darah
- * 
+ *
  * Proses:
  * 1. Validasi lansia exists
  * 2. Hitung BMI menggunakan utility
  * 3. Klasifikasi tekanan darah menggunakan utility
  * 4. Create pemeriksaan di database
  * 5. Return pemeriksaan dengan hasil kalkulasi
- * 
+ *
  * @param lansiaId - ID lansia
  * @param data - Data pemeriksaan fisik
  * @returns Pemeriksaan yang telah dibuat dengan hasil kalkulasi
@@ -84,23 +84,20 @@ export const createPemeriksaanFisik = async (
   try {
     // Validasi lansia exists
     const lansia = await findLansiaById(lansiaId);
-    
+
     if (!lansia) {
       logger.warn('Gagal create pemeriksaan fisik: Lansia tidak ditemukan', {
         lansiaId,
       });
       throw new Error('Lansia tidak ditemukan');
     }
-    
+
     // Hitung BMI
     const bmiResult = hitungBMI(data.berat, data.tinggi);
-    
+
     // Klasifikasi tekanan darah
-    const tekananDarahResult = klasifikasiTekananDarah(
-      data.sistolik,
-      data.diastolik
-    );
-    
+    const tekananDarahResult = klasifikasiTekananDarah(data.sistolik, data.diastolik);
+
     // Create pemeriksaan
     const pemeriksaan = await createPemeriksaan({
       lansia: {
@@ -114,7 +111,7 @@ export const createPemeriksaanFisik = async (
       diastolik: data.diastolik,
       tekananDarah: tekananDarahResult.kategori,
     });
-    
+
     logger.info('Pemeriksaan fisik berhasil dibuat', {
       pemeriksaanId: pemeriksaan.id,
       lansiaId,
@@ -123,7 +120,7 @@ export const createPemeriksaanFisik = async (
       tekananDarah: tekananDarahResult.kategori,
       emergency: tekananDarahResult.emergency,
     });
-    
+
     return pemeriksaan;
   } catch (error) {
     throw error;
@@ -132,13 +129,13 @@ export const createPemeriksaanFisik = async (
 
 /**
  * Create pemeriksaan kesehatan dengan klasifikasi nilai laboratorium
- * 
+ *
  * Proses:
  * 1. Validasi lansia exists
  * 2. Klasifikasi semua nilai lab menggunakan utilities
  * 3. Create pemeriksaan di database
  * 4. Return pemeriksaan dengan hasil klasifikasi
- * 
+ *
  * @param lansiaId - ID lansia
  * @param data - Data pemeriksaan kesehatan
  * @returns Pemeriksaan yang telah dibuat dengan hasil klasifikasi
@@ -151,35 +148,35 @@ export const createPemeriksaanKesehatan = async (
   try {
     // Validasi lansia exists
     const lansia = await findLansiaById(lansiaId);
-    
+
     if (!lansia) {
       logger.warn('Gagal create pemeriksaan kesehatan: Lansia tidak ditemukan', {
         lansiaId,
       });
       throw new Error('Lansia tidak ditemukan');
     }
-    
+
     // Klasifikasi gula darah
     const klasifikasiGula: KlasifikasiGulaDarah = {};
-    
+
     if (data.gulaPuasa !== undefined) {
       klasifikasiGula.gdp = klasifikasiGDP(data.gulaPuasa);
     }
-    
+
     if (data.gulaSewaktu !== undefined) {
       klasifikasiGula.gds = klasifikasiGDS(data.gulaSewaktu);
     }
-    
+
     if (data.gula2Jpp !== undefined) {
       klasifikasiGula.duaJpp = klasifikasiDuaJPP(data.gula2Jpp);
     }
-    
+
     // Klasifikasi kolesterol
     let klasifikasiKolesterolResult: string | undefined;
     if (data.kolesterol !== undefined) {
       klasifikasiKolesterolResult = klasifikasiKolesterol(data.kolesterol);
     }
-    
+
     // Klasifikasi asam urat (perlu gender dari lansia)
     // Tidak disimpan di pemeriksaan karena tidak ada field untuk itu
     // Hanya untuk logging
@@ -188,7 +185,7 @@ export const createPemeriksaanKesehatan = async (
         data.asamUrat,
         lansia.gender as 'L' | 'P'
       );
-      
+
       logger.debug('Klasifikasi asam urat', {
         lansiaId,
         gender: lansia.gender,
@@ -196,7 +193,7 @@ export const createPemeriksaanKesehatan = async (
         klasifikasi: klasifikasiAsamUratResult,
       });
     }
-    
+
     // Create pemeriksaan
     const pemeriksaan = await createPemeriksaan({
       lansia: {
@@ -206,20 +203,19 @@ export const createPemeriksaanKesehatan = async (
       gulaPuasa: data.gulaPuasa,
       gulaSewaktu: data.gulaSewaktu,
       gula2Jpp: data.gula2Jpp,
-      klasifikasiGula: Object.keys(klasifikasiGula).length > 0
-        ? (klasifikasiGula as any)
-        : undefined,
+      klasifikasiGula:
+        Object.keys(klasifikasiGula).length > 0 ? (klasifikasiGula as any) : undefined,
       kolesterol: data.kolesterol,
       klasifikasiKolesterol: klasifikasiKolesterolResult,
     });
-    
+
     logger.info('Pemeriksaan kesehatan berhasil dibuat', {
       pemeriksaanId: pemeriksaan.id,
       lansiaId,
       klasifikasiGula,
       klasifikasiKolesterol: klasifikasiKolesterolResult,
     });
-    
+
     return pemeriksaan;
   } catch (error) {
     throw error;
@@ -228,7 +224,7 @@ export const createPemeriksaanKesehatan = async (
 
 /**
  * Create pemeriksaan gabungan (fisik + kesehatan)
- * 
+ *
  * Proses:
  * 1. Validasi lansia exists
  * 2. Hitung BMI jika ada data tinggi dan berat
@@ -236,7 +232,7 @@ export const createPemeriksaanKesehatan = async (
  * 4. Klasifikasi semua nilai lab yang ada
  * 5. Create pemeriksaan di database
  * 6. Return pemeriksaan dengan hasil kalkulasi dan klasifikasi
- * 
+ *
  * @param lansiaId - ID lansia
  * @param data - Data pemeriksaan gabungan
  * @returns Pemeriksaan yang telah dibuat dengan hasil kalkulasi dan klasifikasi
@@ -249,56 +245,53 @@ export const createPemeriksaanGabungan = async (
   try {
     // Validasi lansia exists
     const lansia = await findLansiaById(lansiaId);
-    
+
     if (!lansia) {
       logger.warn('Gagal create pemeriksaan gabungan: Lansia tidak ditemukan', {
         lansiaId,
       });
       throw new Error('Lansia tidak ditemukan');
     }
-    
+
     // Hitung BMI jika ada data lengkap
     let bmiNilai: number | undefined;
     let bmiKategori: string | undefined;
-    
+
     if (data.tinggi !== undefined && data.berat !== undefined) {
       const bmiResult = hitungBMI(data.berat, data.tinggi);
       bmiNilai = bmiResult.nilai;
       bmiKategori = bmiResult.kategori;
     }
-    
+
     // Klasifikasi tekanan darah jika ada data lengkap
     let tekananDarahKategori: string | undefined;
-    
+
     if (data.sistolik !== undefined && data.diastolik !== undefined) {
-      const tekananDarahResult = klasifikasiTekananDarah(
-        data.sistolik,
-        data.diastolik
-      );
+      const tekananDarahResult = klasifikasiTekananDarah(data.sistolik, data.diastolik);
       tekananDarahKategori = tekananDarahResult.kategori;
     }
-    
+
     // Klasifikasi gula darah
     const klasifikasiGula: KlasifikasiGulaDarah = {};
-    
+
     if (data.gulaPuasa !== undefined) {
       klasifikasiGula.gdp = klasifikasiGDP(data.gulaPuasa);
     }
-    
+
     if (data.gulaSewaktu !== undefined) {
       klasifikasiGula.gds = klasifikasiGDS(data.gulaSewaktu);
     }
-    
+
     if (data.gula2Jpp !== undefined) {
       klasifikasiGula.duaJpp = klasifikasiDuaJPP(data.gula2Jpp);
     }
-    
+
     // Klasifikasi kolesterol
     let klasifikasiKolesterolResult: string | undefined;
     if (data.kolesterol !== undefined) {
       klasifikasiKolesterolResult = klasifikasiKolesterol(data.kolesterol);
     }
-    
+
     // Create pemeriksaan
     const pemeriksaan = await createPemeriksaan({
       lansia: {
@@ -315,21 +308,25 @@ export const createPemeriksaanGabungan = async (
       gulaPuasa: data.gulaPuasa,
       gulaSewaktu: data.gulaSewaktu,
       gula2Jpp: data.gula2Jpp,
-      klasifikasiGula: Object.keys(klasifikasiGula).length > 0
-        ? (klasifikasiGula as any)
-        : undefined,
+      klasifikasiGula:
+        Object.keys(klasifikasiGula).length > 0 ? (klasifikasiGula as any) : undefined,
       kolesterol: data.kolesterol,
       klasifikasiKolesterol: klasifikasiKolesterolResult,
     });
-    
+
     logger.info('Pemeriksaan gabungan berhasil dibuat', {
       pemeriksaanId: pemeriksaan.id,
       lansiaId,
       hasFisik: !!(data.tinggi && data.berat && data.sistolik && data.diastolik),
-      hasKesehatan: !!(data.asamUrat || data.gulaPuasa || data.gulaSewaktu || 
-                       data.gula2Jpp || data.kolesterol),
+      hasKesehatan: !!(
+        data.asamUrat ||
+        data.gulaPuasa ||
+        data.gulaSewaktu ||
+        data.gula2Jpp ||
+        data.kolesterol
+      ),
     });
-    
+
     return pemeriksaan;
   } catch (error) {
     throw error;

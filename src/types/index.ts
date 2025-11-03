@@ -3,8 +3,6 @@
  * File ini berisi type definitions yang digunakan di seluruh aplikasi
  */
 
-import { Request } from 'express';
-
 /**
  * Interface untuk user info yang di-attach ke request
  * Digunakan setelah autentikasi berhasil
@@ -18,6 +16,7 @@ export interface AuthUser {
  * Extend Express Request interface untuk include user info
  * Digunakan di middleware dan controllers untuk akses user info
  */
+/* eslint-disable @typescript-eslint/no-namespace */
 declare global {
   namespace Express {
     interface Request {
@@ -25,5 +24,6 @@ declare global {
     }
   }
 }
+/* eslint-enable @typescript-eslint/no-namespace */
 
 export {};

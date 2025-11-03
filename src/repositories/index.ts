@@ -1,6 +1,6 @@
 /**
  * Repositories Index
- * 
+ *
  * Central export point untuk semua repositories.
  * Memudahkan import repositories di layer lain.
  */

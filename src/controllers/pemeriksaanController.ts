@@ -1,10 +1,10 @@
 /**
  * Pemeriksaan Controller
- * 
+ *
  * Controller untuk handle HTTP requests terkait pemeriksaan kesehatan lansia.
  * Bertanggung jawab untuk create pemeriksaan fisik, kesehatan, dan gabungan
  * dengan kalkulasi dan klasifikasi otomatis.
- * 
+ *
  * Prinsip yang diterapkan:
  * - Single Responsibility: Hanya handle HTTP logic untuk pemeriksaan
  * - Dependency Inversion: Depend pada service abstractions
@@ -25,36 +25,36 @@ import logger from '../utils/logger';
 
 /**
  * Create Pemeriksaan Fisik Controller
- * 
+ *
  * Handle POST /api/lansia/:kode/pemeriksaan/fisik
- * 
+ *
  * Proses:
  * 1. Extract kode dari route params
  * 2. Extract data pemeriksaan fisik dari request body (sudah divalidasi)
  * 3. Get lansia by kode untuk mendapatkan lansiaId
  * 4. Call pemeriksaanService.createPemeriksaanFisik
  * 5. Return pemeriksaan dengan hasil kalkulasi BMI dan klasifikasi tekanan darah
- * 
+ *
  * Validasi:
  * - Request body divalidasi oleh validateMiddleware dengan pemeriksaanFisikSchema
  * - Tinggi: 50-250 cm
  * - Berat: 10-300 kg
  * - Sistolik: 40-300 mmHg
  * - Diastolik: 30-200 mmHg
- * 
+ *
  * Kalkulasi Otomatis:
  * - BMI dihitung dengan rumus: berat(kg) / (tinggi(m))^2
  * - BMI dikategorikan berdasarkan standar Asia Pasifik
  * - Tekanan darah dikategorikan berdasarkan AHA guidelines
- * 
+ *
  * Security:
  * - Endpoint ini protected oleh authMiddleware
  * - Dapat diakses oleh ADMIN dan PETUGAS
- * 
+ *
  * @param req - Express request object dengan params: { kode } dan body: PemeriksaanFisikDTO
  * @param res - Express response object
  * @param next - Express next function untuk error handling
- * 
+ *
  * @example
  * // Request
  * POST /api/lansia/pasien202511031a/pemeriksaan/fisik
@@ -66,7 +66,7 @@ import logger from '../utils/logger';
  *   "sistolik": 120,
  *   "diastolik": 80
  * }
- * 
+ *
  * // Response (201 Created)
  * {
  *   "id": 1,
@@ -88,12 +88,12 @@ import logger from '../utils/logger';
  *   "klasifikasiKolesterol": null,
  *   "createdAt": "2025-11-03T10:00:00.000Z"
  * }
- * 
+ *
  * // Response (404 Not Found) - lansia tidak ditemukan
  * {
  *   "error": "Lansia tidak ditemukan"
  * }
- * 
+ *
  * // Response (400 Bad Request) - validasi gagal
  * {
  *   "error": "Validasi input gagal",
@@ -169,36 +169,36 @@ export const createPemeriksaanFisik = async (
 
 /**
  * Create Pemeriksaan Kesehatan Controller
- * 
+ *
  * Handle POST /api/lansia/:kode/pemeriksaan/kesehatan
- * 
+ *
  * Proses:
  * 1. Extract kode dari route params
  * 2. Extract data pemeriksaan kesehatan dari request body (sudah divalidasi)
  * 3. Get lansia by kode untuk mendapatkan lansiaId
  * 4. Call pemeriksaanService.createPemeriksaanKesehatan
  * 5. Return pemeriksaan dengan hasil klasifikasi nilai laboratorium
- * 
+ *
  * Validasi:
  * - Request body divalidasi oleh validateMiddleware dengan pemeriksaanKesehatanSchema
  * - Semua nilai harus non-negatif
  * - Minimal satu pemeriksaan harus diisi
- * 
+ *
  * Klasifikasi Otomatis:
  * - Gula Darah Puasa (GDP): Normal < 100, Pra-Diabetes 100-125, Diabetes ≥ 126
  * - Gula Darah Sewaktu (GDS): Normal < 200, Diabetes ≥ 200
  * - Gula 2JPP: Normal < 140, Pra-Diabetes 140-199, Diabetes ≥ 200
  * - Kolesterol: Normal < 200, Batas Tinggi 200-239, Tinggi ≥ 240
  * - Asam Urat: Berdasarkan gender lansia
- * 
+ *
  * Security:
  * - Endpoint ini protected oleh authMiddleware
  * - Dapat diakses oleh ADMIN dan PETUGAS
- * 
+ *
  * @param req - Express request object dengan params: { kode } dan body: PemeriksaanKesehatanDTO
  * @param res - Express response object
  * @param next - Express next function untuk error handling
- * 
+ *
  * @example
  * // Request
  * POST /api/lansia/pasien202511031a/pemeriksaan/kesehatan
@@ -209,7 +209,7 @@ export const createPemeriksaanFisik = async (
  *   "gulaPuasa": 95,
  *   "kolesterol": 180
  * }
- * 
+ *
  * // Response (201 Created)
  * {
  *   "id": 2,
@@ -233,12 +233,12 @@ export const createPemeriksaanFisik = async (
  *   "klasifikasiKolesterol": "Normal",
  *   "createdAt": "2025-11-03T10:00:00.000Z"
  * }
- * 
+ *
  * // Response (404 Not Found) - lansia tidak ditemukan
  * {
  *   "error": "Lansia tidak ditemukan"
  * }
- * 
+ *
  * // Response (400 Bad Request) - validasi gagal
  * {
  *   "error": "Validasi input gagal",
@@ -314,40 +314,40 @@ export const createPemeriksaanKesehatan = async (
 
 /**
  * Create Pemeriksaan Gabungan Controller
- * 
+ *
  * Handle POST /api/lansia/:kode/pemeriksaan
- * 
+ *
  * Proses:
  * 1. Extract kode dari route params
  * 2. Extract data pemeriksaan gabungan dari request body (sudah divalidasi)
  * 3. Get lansia by kode untuk mendapatkan lansiaId
  * 4. Call pemeriksaanService.createPemeriksaanGabungan
  * 5. Return pemeriksaan dengan hasil kalkulasi dan klasifikasi
- * 
+ *
  * Validasi:
  * - Request body divalidasi oleh validateMiddleware dengan pemeriksaanGabunganSchema
  * - Semua field optional, minimal satu harus diisi
  * - Jika ada pemeriksaan fisik, semua field fisik harus lengkap
  * - Semua nilai harus dalam rentang valid
- * 
+ *
  * Kalkulasi dan Klasifikasi Otomatis:
  * - BMI dihitung jika ada data tinggi dan berat
  * - Tekanan darah dikategorikan jika ada data sistolik dan diastolik
  * - Semua nilai lab dikategorikan sesuai standar medis
- * 
+ *
  * Use Case:
  * - Endpoint ini digunakan untuk pemeriksaan lengkap (fisik + kesehatan)
  * - Atau untuk pemeriksaan parsial (hanya beberapa parameter)
  * - Lebih fleksibel daripada endpoint fisik atau kesehatan terpisah
- * 
+ *
  * Security:
  * - Endpoint ini protected oleh authMiddleware
  * - Dapat diakses oleh ADMIN dan PETUGAS
- * 
+ *
  * @param req - Express request object dengan params: { kode } dan body: PemeriksaanGabunganDTO
  * @param res - Express response object
  * @param next - Express next function untuk error handling
- * 
+ *
  * @example
  * // Request - Pemeriksaan lengkap
  * POST /api/lansia/pasien202511031a/pemeriksaan
@@ -362,7 +362,7 @@ export const createPemeriksaanKesehatan = async (
  *   "gulaPuasa": 95,
  *   "kolesterol": 180
  * }
- * 
+ *
  * // Response (201 Created)
  * {
  *   "id": 3,
@@ -386,7 +386,7 @@ export const createPemeriksaanKesehatan = async (
  *   "klasifikasiKolesterol": "Normal",
  *   "createdAt": "2025-11-03T10:00:00.000Z"
  * }
- * 
+ *
  * @example
  * // Request - Pemeriksaan parsial (hanya kesehatan)
  * POST /api/lansia/pasien202511031a/pemeriksaan
@@ -396,7 +396,7 @@ export const createPemeriksaanKesehatan = async (
  *   "gulaPuasa": 110,
  *   "kolesterol": 220
  * }
- * 
+ *
  * // Response (201 Created)
  * {
  *   "id": 4,
@@ -420,12 +420,12 @@ export const createPemeriksaanKesehatan = async (
  *   "klasifikasiKolesterol": "Batas Tinggi",
  *   "createdAt": "2025-11-03T10:00:00.000Z"
  * }
- * 
+ *
  * // Response (404 Not Found) - lansia tidak ditemukan
  * {
  *   "error": "Lansia tidak ditemukan"
  * }
- * 
+ *
  * // Response (400 Bad Request) - validasi gagal
  * {
  *   "error": "Validasi input gagal",
@@ -488,7 +488,7 @@ export const createPemeriksaanGabungan = async (
     // Determine jenis pemeriksaan untuk logging
     const hasFisik = !!(tinggi && berat && sistolik && diastolik);
     const hasKesehatan = !!(asamUrat || gulaPuasa || gulaSewaktu || gula2Jpp || kolesterol);
-    
+
     let jenisPemeriksaan = 'gabungan';
     if (hasFisik && !hasKesehatan) {
       jenisPemeriksaan = 'fisik';

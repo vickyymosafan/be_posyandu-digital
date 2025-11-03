@@ -1,9 +1,9 @@
 /**
  * Rate Limiter Middleware
- * 
+ *
  * Middleware untuk rate limiting menggunakan rate-limiter-flexible.
  * Membatasi jumlah requests dari IP address tertentu dalam periode waktu tertentu.
- * 
+ *
  * Prinsip yang diterapkan:
  * - Single Responsibility: Hanya handle rate limiting
  * - Open/Closed: Extensible melalui factory pattern tanpa modifikasi
@@ -67,7 +67,7 @@ const DEFAULT_OPTIONS: Required<Omit<RateLimiterOptions, 'blockDuration'>> = {
 /**
  * Get client identifier dari request
  * Menggunakan IP address sebagai identifier
- * 
+ *
  * @param req - Express request object
  * @returns Client identifier string
  */
@@ -85,7 +85,7 @@ const getClientIdentifier = (req: Request): string => {
 
 /**
  * Format retry-after time menjadi human-readable
- * 
+ *
  * @param seconds - Waktu dalam detik
  * @returns Human-readable string
  */
@@ -100,25 +100,25 @@ const formatRetryAfter = (seconds: number): string => {
 
 /**
  * Rate Limiter Factory
- * 
+ *
  * Factory function yang menghasilkan middleware untuk rate limiting.
  * Middleware yang dihasilkan akan membatasi jumlah requests dari IP address
  * tertentu dalam periode waktu tertentu.
- * 
+ *
  * Proses:
  * 1. Extract client identifier (IP address) dari request
  * 2. Consume 1 point dari rate limiter
  * 3. Jika berhasil, lanjutkan ke handler berikutnya
  * 4. Jika limit exceeded, return 429 dengan Retry-After header
- * 
+ *
  * Use Cases:
  * - Login endpoint: Proteksi dari brute force attacks
  * - API endpoints: Proteksi dari abuse
  * - Public endpoints: Proteksi dari DDoS
- * 
+ *
  * @param options - Konfigurasi rate limiter
  * @returns Express middleware function
- * 
+ *
  * @example
  * // Rate limiter untuk login (5 attempts per 15 menit)
  * const loginLimiter = createRateLimiter({
@@ -127,9 +127,9 @@ const formatRetryAfter = (seconds: number): string => {
  *   message: 'Terlalu banyak percobaan login',
  *   keyPrefix: 'login'
  * });
- * 
+ *
  * router.post('/auth/login', loginLimiter, loginController);
- * 
+ *
  * @example
  * // Rate limiter untuk API umum (100 requests per menit)
  * const apiLimiter = createRateLimiter({
@@ -137,7 +137,7 @@ const formatRetryAfter = (seconds: number): string => {
  *   duration: 60,
  *   keyPrefix: 'api'
  * });
- * 
+ *
  * app.use('/api', apiLimiter);
  */
 export const createRateLimiter = (options: RateLimiterOptions = {}) => {
@@ -230,12 +230,12 @@ export const createRateLimiter = (options: RateLimiterOptions = {}) => {
 
 /**
  * Pre-configured rate limiter untuk login endpoint
- * 
+ *
  * Konfigurasi:
  * - 5 attempts per 15 menit
  * - Block duration: 15 menit
  * - Custom message untuk login
- * 
+ *
  * @example
  * router.post('/auth/login', loginRateLimiter, loginController);
  */
@@ -249,11 +249,11 @@ export const loginRateLimiter = createRateLimiter({
 
 /**
  * Pre-configured rate limiter untuk API umum
- * 
+ *
  * Konfigurasi:
  * - 100 requests per menit
  * - Untuk proteksi API dari abuse
- * 
+ *
  * @example
  * app.use('/api', apiRateLimiter);
  */

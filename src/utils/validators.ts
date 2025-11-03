@@ -1,11 +1,11 @@
 /**
  * Validators menggunakan Zod untuk validasi input di seluruh aplikasi
- * 
+ *
  * File ini mengimplementasikan:
  * - Reusable validators untuk data umum (NIK, KK, tanggal)
  * - Zod schemas untuk semua DTOs (Auth, User, Lansia, Pemeriksaan)
  * - Type inference untuk type safety
- * 
+ *
  * Prinsip yang diterapkan:
  * - Single Responsibility: Setiap schema bertanggung jawab untuk satu DTO
  * - Open/Closed: Schema dapat di-extend tanpa modifikasi
@@ -22,7 +22,7 @@ import { z } from 'zod';
 /**
  * Validator untuk NIK (Nomor Induk Kependudukan)
  * NIK harus berupa string 16 digit angka
- * 
+ *
  * @example "3201234567890123"
  */
 export const nikValidator = z
@@ -34,7 +34,7 @@ export const nikValidator = z
 /**
  * Validator untuk Nomor Kartu Keluarga (KK)
  * KK harus berupa string 16 digit angka
- * 
+ *
  * @example "3201234567890123"
  */
 export const kkValidator = z
@@ -46,7 +46,7 @@ export const kkValidator = z
 /**
  * Validator untuk tanggal lahir
  * Tanggal harus valid dan tidak boleh di masa depan
- * 
+ *
  * @example "1950-01-15"
  */
 export const tanggalLahirValidator = z
@@ -110,7 +110,7 @@ export const genderValidator = z.enum(['L', 'P'], {
 
 /**
  * Schema untuk request login
- * 
+ *
  * @property email - Email user
  * @property kataSandi - Kata sandi user
  */
@@ -127,7 +127,7 @@ export type LoginRequestDTO = z.infer<typeof loginRequestSchema>;
 
 /**
  * Schema untuk membuat petugas baru
- * 
+ *
  * @property nama - Nama lengkap petugas
  * @property email - Email petugas (unique)
  * @property kataSandi - Kata sandi petugas
@@ -142,7 +142,7 @@ export type CreatePetugasDTO = z.infer<typeof createPetugasSchema>;
 
 /**
  * Schema untuk update nama user
- * 
+ *
  * @property nama - Nama baru
  */
 export const updateNamaSchema = z.object({
@@ -153,7 +153,7 @@ export type UpdateNamaDTO = z.infer<typeof updateNamaSchema>;
 
 /**
  * Schema untuk update password user
- * 
+ *
  * @property kataSandiLama - Kata sandi lama untuk verifikasi
  * @property kataSandiBaru - Kata sandi baru
  */
@@ -166,7 +166,7 @@ export type UpdatePasswordDTO = z.infer<typeof updatePasswordSchema>;
 
 /**
  * Schema untuk update status aktif petugas
- * 
+ *
  * @property aktif - Status aktif (true/false)
  */
 export const updateStatusPetugasSchema = z.object({
@@ -181,7 +181,7 @@ export type UpdateStatusPetugasDTO = z.infer<typeof updateStatusPetugasSchema>;
 
 /**
  * Schema untuk membuat data lansia baru
- * 
+ *
  * @property nik - Nomor Induk Kependudukan (16 digit)
  * @property kk - Nomor Kartu Keluarga (16 digit)
  * @property nama - Nama lengkap lansia
@@ -205,7 +205,7 @@ export type CreateLansiaDTO = z.infer<typeof createLansiaSchema>;
 
 /**
  * Schema untuk query parameter kode pasien
- * 
+ *
  * @property kode - Kode pasien lansia
  */
 export const kodePasienQuerySchema = z.object({
@@ -216,7 +216,7 @@ export type KodePasienQueryDTO = z.infer<typeof kodePasienQuerySchema>;
 
 /**
  * Schema untuk find lansia by kode
- * 
+ *
  * @property kode - Kode pasien lansia
  */
 export const findLansiaSchema = z.object({
@@ -235,7 +235,7 @@ export type FindLansiaDTO = z.infer<typeof findLansiaSchema>;
 /**
  * Schema untuk pemeriksaan fisik
  * Semua field wajib diisi
- * 
+ *
  * @property tinggi - Tinggi badan dalam cm (50-250)
  * @property berat - Berat badan dalam kg (10-300)
  * @property sistolik - Tekanan darah sistolik dalam mmHg (40-300)
@@ -268,7 +268,7 @@ export type PemeriksaanFisikDTO = z.infer<typeof pemeriksaanFisikSchema>;
  * Schema untuk pemeriksaan kesehatan/laboratorium
  * Semua field optional, minimal satu harus diisi
  * Semua nilai dalam mg/dL dan harus non-negatif
- * 
+ *
  * @property asamUrat - Kadar asam urat
  * @property gulaPuasa - Gula Darah Puasa (GDP)
  * @property gulaSewaktu - Gula Darah Sewaktu (GDS)
@@ -277,26 +277,11 @@ export type PemeriksaanFisikDTO = z.infer<typeof pemeriksaanFisikSchema>;
  */
 export const pemeriksaanKesehatanSchema = z
   .object({
-    asamUrat: z
-      .number()
-      .nonnegative('Nilai asam urat tidak boleh negatif')
-      .optional(),
-    gulaPuasa: z
-      .number()
-      .nonnegative('Nilai gula darah puasa tidak boleh negatif')
-      .optional(),
-    gulaSewaktu: z
-      .number()
-      .nonnegative('Nilai gula darah sewaktu tidak boleh negatif')
-      .optional(),
-    gula2Jpp: z
-      .number()
-      .nonnegative('Nilai gula darah 2JPP tidak boleh negatif')
-      .optional(),
-    kolesterol: z
-      .number()
-      .nonnegative('Nilai kolesterol tidak boleh negatif')
-      .optional(),
+    asamUrat: z.number().nonnegative('Nilai asam urat tidak boleh negatif').optional(),
+    gulaPuasa: z.number().nonnegative('Nilai gula darah puasa tidak boleh negatif').optional(),
+    gulaSewaktu: z.number().nonnegative('Nilai gula darah sewaktu tidak boleh negatif').optional(),
+    gula2Jpp: z.number().nonnegative('Nilai gula darah 2JPP tidak boleh negatif').optional(),
+    kolesterol: z.number().nonnegative('Nilai kolesterol tidak boleh negatif').optional(),
   })
   .refine(
     (data) =>
@@ -316,7 +301,7 @@ export type PemeriksaanKesehatanDTO = z.infer<typeof pemeriksaanKesehatanSchema>
  * Schema untuk pemeriksaan gabungan (fisik + kesehatan)
  * Semua field optional, minimal satu harus diisi
  * Jika ada pemeriksaan fisik, semua field fisik harus lengkap
- * 
+ *
  * @property tinggi - Tinggi badan dalam cm (50-250)
  * @property berat - Berat badan dalam kg (10-300)
  * @property sistolik - Tekanan darah sistolik dalam mmHg (40-300)
@@ -353,26 +338,11 @@ export const pemeriksaanGabunganSchema = z
       .max(200, 'Tekanan darah diastolik maksimal 200 mmHg')
       .optional(),
     // Pemeriksaan Kesehatan (optional)
-    asamUrat: z
-      .number()
-      .nonnegative('Nilai asam urat tidak boleh negatif')
-      .optional(),
-    gulaPuasa: z
-      .number()
-      .nonnegative('Nilai gula darah puasa tidak boleh negatif')
-      .optional(),
-    gulaSewaktu: z
-      .number()
-      .nonnegative('Nilai gula darah sewaktu tidak boleh negatif')
-      .optional(),
-    gula2Jpp: z
-      .number()
-      .nonnegative('Nilai gula darah 2JPP tidak boleh negatif')
-      .optional(),
-    kolesterol: z
-      .number()
-      .nonnegative('Nilai kolesterol tidak boleh negatif')
-      .optional(),
+    asamUrat: z.number().nonnegative('Nilai asam urat tidak boleh negatif').optional(),
+    gulaPuasa: z.number().nonnegative('Nilai gula darah puasa tidak boleh negatif').optional(),
+    gulaSewaktu: z.number().nonnegative('Nilai gula darah sewaktu tidak boleh negatif').optional(),
+    gula2Jpp: z.number().nonnegative('Nilai gula darah 2JPP tidak boleh negatif').optional(),
+    kolesterol: z.number().nonnegative('Nilai kolesterol tidak boleh negatif').optional(),
   })
   .refine(
     (data) => {

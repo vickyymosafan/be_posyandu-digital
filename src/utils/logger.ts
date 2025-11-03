@@ -1,16 +1,16 @@
 /**
  * Logger Utility untuk Sistem Backend Posyandu Lansia
- * 
+ *
  * Menggunakan Winston untuk structured logging dengan support untuk:
  * - Multiple log levels (error, warn, info, debug)
  * - Environment-specific formatting (development vs production)
  * - Structured logging dengan context/metadata
  * - Timezone-aware timestamps
- * 
+ *
  * Usage:
  * ```typescript
  * import logger from './utils/logger';
- * 
+ *
  * logger.info('User logged in', { userId: 1, email: 'user@example.com' });
  * logger.error('Database connection failed', { error: err.message });
  * ```
@@ -23,7 +23,7 @@ import winston from 'winston';
  * Memungkinkan passing data tambahan ke log entries
  */
 export interface LogContext {
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 /**
@@ -81,7 +81,7 @@ const developmentFormat = winston.format.combine(
   timestampFormat(),
   winston.format.printf(({ timestamp, level, message, ...context }) => {
     // Format base message
-    let log = `${timestamp} [${level}]: ${message}`;
+    let log = `${String(timestamp)} [${String(level)}]: ${String(message)}`;
 
     // Tambahkan context jika ada
     const contextKeys = Object.keys(context);
@@ -199,11 +199,11 @@ export const logWithContext = (
 
 /**
  * Export logger instance sebagai default export
- * 
+ *
  * Usage:
  * ```typescript
  * import logger from './utils/logger';
- * 
+ *
  * logger.info('Server started', { port: 3000 });
  * logger.error('Database error', { error: err.message, query: 'SELECT * FROM users' });
  * logger.warn('Rate limit exceeded', { ip: '192.168.1.1', attempts: 6 });
