@@ -13,3 +13,6 @@ export * from './roleGuard';
 
 // Validate Middleware
 export * from './validateMiddleware';
+
+// Error Handler Middleware
+export * from './errorHandler';
