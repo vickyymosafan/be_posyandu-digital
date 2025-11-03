@@ -1,0 +1,115 @@
+// Prisma Schema untuk Sistem Backend Posyandu Lansia
+// Database: PostgreSQL
+// ORM: Prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// ENUMS
+// ============================================
+
+/// Role user dalam sistem
+/// ADMIN: Memiliki akses penuh untuk mengelola petugas dan semua fitur
+/// PETUGAS: Dapat mencatat data lansia dan pemeriksaan
+enum Role {
+  ADMIN
+  PETUGAS
+}
+
+/// Gender/Jenis kelamin
+/// L: Laki-laki
+/// P: Perempuan
+enum Gender {
+  L
+  P
+}
+
+// ============================================
+// MODELS
+// ============================================
+
+/// Model User untuk autentikasi dan otorisasi
+/// Menyimpan data petugas dan admin sistem
+model User {
+  id         Int      @id @default(autoincrement())
+  nama       String   @db.VarChar(255)
+  email      String   @unique @db.VarChar(255)
+  kataSandi  String   @db.VarChar(255)
+  role       Role
+  aktif      Boolean  @default(true)
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@map("users")
+  @@index([email])
+  @@index([role])
+}
+
+/// Model Lansia untuk data lanjut usia
+/// Setiap lansia memiliki kode pasien unik yang di-generate otomatis
+model Lansia {
+  id           Int           @id @default(autoincrement())
+  kode         String        @unique @db.VarChar(16)
+  nik          String        @unique @db.VarChar(16)
+  kk           String        @db.VarChar(16)
+  nama         String        @db.VarChar(255)
+  gender       Gender
+  tanggalLahir DateTime      @map("tanggal_lahir") @db.Date
+  alamat       String        @db.Text
+  createdAt    DateTime      @default(now()) @map("created_at")
+
+  // Relasi one-to-many dengan Pemeriksaan
+  pemeriksaan  Pemeriksaan[]
+
+  @@map("lansia")
+  @@index([kode])
+  @@index([nik])
+  @@index([createdAt])
+}
+
+/// Model Pemeriksaan untuk data pemeriksaan fisik dan kesehatan lansia
+/// Mendukung pemeriksaan fisik (tinggi, berat, tekanan darah) dan
+/// pemeriksaan kesehatan (gula darah, kolesterol, asam urat)
+model Pemeriksaan {
+  id        Int      @id @default(autoincrement())
+  lansiaId  Int      @map("lansia_id")
+  tanggal   DateTime @default(now()) @db.Timestamptz(3)
+
+  // Pemeriksaan Fisik
+  // Tinggi badan dalam cm, berat badan dalam kg
+  tinggi       Float?  @db.DoublePrecision
+  berat        Float?  @db.DoublePrecision
+  bmi          Float?  @db.DoublePrecision
+  kategoriBmi  String? @map("kategori_bmi") @db.VarChar(100)
+  
+  // Tekanan darah dalam mmHg
+  sistolik     Int?    @db.Integer
+  diastolik    Int?    @db.Integer
+  tekananDarah String? @map("tekanan_darah") @db.VarChar(100)
+
+  // Pemeriksaan Kesehatan (Laboratorium)
+  // Semua nilai dalam mg/dL
+  asamUrat              Float?  @map("asam_urat") @db.DoublePrecision
+  gulaPuasa             Float?  @map("gula_puasa") @db.DoublePrecision
+  gulaSewaktu           Float?  @map("gula_sewaktu") @db.DoublePrecision
+  gula2Jpp              Float?  @map("gula_2jpp") @db.DoublePrecision
+  klasifikasiGula       Json?   @map("klasifikasi_gula")
+  kolesterol            Float?  @db.DoublePrecision
+  klasifikasiKolesterol String? @map("klasifikasi_kolesterol") @db.VarChar(100)
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Relasi many-to-one dengan Lansia
+  lansia Lansia @relation(fields: [lansiaId], references: [id], onDelete: Cascade)
+
+  @@map("pemeriksaan")
+  @@index([lansiaId])
+  @@index([tanggal])
+  @@index([createdAt])
+}

@@ -315,7 +315,7 @@ MIT License - lihat file LICENSE untuk detail.
 
 ## 👥 Authors
 
-- Backend Team - Sistem Posyandu Lansia
+- vickymosafan
 
 ## 🙏 Acknowledgments
 
