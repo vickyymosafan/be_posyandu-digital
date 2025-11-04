@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * Error Handler Middleware
  *
@@ -185,6 +186,7 @@ export const errorHandler = (
   else {
     // Check apakah error memiliki statusCode property (dari library lain)
     if ('statusCode' in err && typeof (err as any).statusCode === 'number') {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       statusCode = (err as any).statusCode;
     }
 

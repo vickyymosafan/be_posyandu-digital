@@ -11,7 +11,7 @@
  * - DRY: Reuse medical utility functions
  */
 
-import { Pemeriksaan } from '@prisma/client';
+import { Pemeriksaan, Prisma } from '@prisma/client';
 import { createPemeriksaan } from '../repositories/pemeriksaanRepository';
 import { findLansiaById } from '../repositories/lansiaRepository';
 import { hitungBMI } from '../utils/bmi';
@@ -204,7 +204,9 @@ export const createPemeriksaanKesehatan = async (
       gulaSewaktu: data.gulaSewaktu,
       gula2Jpp: data.gula2Jpp,
       klasifikasiGula:
-        Object.keys(klasifikasiGula).length > 0 ? (klasifikasiGula as any) : undefined,
+        Object.keys(klasifikasiGula).length > 0
+          ? (klasifikasiGula as Prisma.InputJsonValue)
+          : undefined,
       kolesterol: data.kolesterol,
       klasifikasiKolesterol: klasifikasiKolesterolResult,
     });
@@ -309,7 +311,9 @@ export const createPemeriksaanGabungan = async (
       gulaSewaktu: data.gulaSewaktu,
       gula2Jpp: data.gula2Jpp,
       klasifikasiGula:
-        Object.keys(klasifikasiGula).length > 0 ? (klasifikasiGula as any) : undefined,
+        Object.keys(klasifikasiGula).length > 0
+          ? (klasifikasiGula as Prisma.InputJsonValue)
+          : undefined,
       kolesterol: data.kolesterol,
       klasifikasiKolesterol: klasifikasiKolesterolResult,
     });

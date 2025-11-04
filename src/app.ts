@@ -51,6 +51,9 @@ import {
 // Logger
 import logger from './utils/logger';
 
+// Utilities
+import { asyncHandler } from './utils/asyncHandler';
+
 /**
  * Create Express Application
  *
@@ -189,7 +192,12 @@ const createApp = (): Application => {
    * @middleware validate - Validasi request body
    * @controller authController.login
    */
-  authRouter.post('/login', loginRateLimiter, validate(loginRequestSchema), authController.login);
+  authRouter.post(
+    '/login',
+    asyncHandler(loginRateLimiter),
+    validate(loginRequestSchema),
+    asyncHandler(authController.login)
+  );
 
   /**
    * POST /api/auth/logout
@@ -227,7 +235,7 @@ const createApp = (): Application => {
    * @middleware authMiddleware - Autentikasi JWT
    * @controller profilController.getProfile
    */
-  profileRouter.get('/', profilController.getProfile);
+  profileRouter.get('/', asyncHandler(profilController.getProfile));
 
   /**
    * PATCH /api/profile/nama
@@ -238,7 +246,11 @@ const createApp = (): Application => {
    * @middleware validate - Validasi request body
    * @controller profilController.updateNamaController
    */
-  profileRouter.patch('/nama', validate(updateNamaSchema), profilController.updateNamaController);
+  profileRouter.patch(
+    '/nama',
+    validate(updateNamaSchema),
+    asyncHandler(profilController.updateNamaController)
+  );
 
   /**
    * PATCH /api/profile/password
@@ -252,7 +264,7 @@ const createApp = (): Application => {
   profileRouter.patch(
     '/password',
     validate(updatePasswordSchema),
-    profilController.updatePasswordController
+    asyncHandler(profilController.updatePasswordController)
   );
 
   apiRouter.use('/profile', profileRouter);
@@ -283,7 +295,11 @@ const createApp = (): Application => {
    * @middleware validate - Validasi request body
    * @controller petugasController.createPetugas
    */
-  petugasRouter.post('/', validate(createPetugasSchema), petugasController.createPetugas);
+  petugasRouter.post(
+    '/',
+    validate(createPetugasSchema),
+    asyncHandler(petugasController.createPetugas)
+  );
 
   /**
    * GET /api/petugas
@@ -295,7 +311,7 @@ const createApp = (): Application => {
    * @middleware roleGuard - Otorisasi role ADMIN
    * @controller petugasController.getAllPetugas
    */
-  petugasRouter.get('/', petugasController.getAllPetugas);
+  petugasRouter.get('/', asyncHandler(petugasController.getAllPetugas));
 
   /**
    * PATCH /api/petugas/:id/status
@@ -311,7 +327,7 @@ const createApp = (): Application => {
   petugasRouter.patch(
     '/:id/status',
     validate(updateStatusPetugasSchema),
-    petugasController.updateStatusPetugas
+    asyncHandler(petugasController.updateStatusPetugas)
   );
 
   apiRouter.use('/petugas', petugasRouter);
@@ -341,7 +357,7 @@ const createApp = (): Application => {
    * @middleware validate - Validasi request body
    * @controller lansiaController.createLansia
    */
-  lansiaRouter.post('/', validate(createLansiaSchema), lansiaController.createLansia);
+  lansiaRouter.post('/', validate(createLansiaSchema), asyncHandler(lansiaController.createLansia));
 
   /**
    * GET /api/lansia
@@ -351,7 +367,7 @@ const createApp = (): Application => {
    * @middleware authMiddleware - Autentikasi JWT
    * @controller lansiaController.getLansia
    */
-  lansiaRouter.get('/', lansiaController.getLansia);
+  lansiaRouter.get('/', asyncHandler(lansiaController.getLansia));
 
   /**
    * GET /api/lansia/:kode
@@ -361,7 +377,7 @@ const createApp = (): Application => {
    * @middleware authMiddleware - Autentikasi JWT
    * @controller lansiaController.getLansiaByKodeParam
    */
-  lansiaRouter.get('/:kode', lansiaController.getLansiaByKodeParam);
+  lansiaRouter.get('/:kode', asyncHandler(lansiaController.getLansiaByKodeParam));
 
   /**
    * GET /api/lansia/:kode/pemeriksaan
@@ -371,7 +387,7 @@ const createApp = (): Application => {
    * @middleware authMiddleware - Autentikasi JWT
    * @controller lansiaController.getPemeriksaanByKode
    */
-  lansiaRouter.get('/:kode/pemeriksaan', lansiaController.getPemeriksaanByKode);
+  lansiaRouter.get('/:kode/pemeriksaan', asyncHandler(lansiaController.getPemeriksaanByKode));
 
   apiRouter.use('/lansia', lansiaRouter);
 
@@ -389,7 +405,12 @@ const createApp = (): Application => {
    * @middleware validate - Validasi request body
    * @controller lansiaController.findLansia
    */
-  apiRouter.post('/find', authMiddleware, validate(findLansiaSchema), lansiaController.findLansia);
+  apiRouter.post(
+    '/find',
+    authMiddleware,
+    validate(findLansiaSchema),
+    asyncHandler(lansiaController.findLansia)
+  );
 
   // --------------------------------------------
   // PEMERIKSAAN ROUTES
@@ -421,7 +442,7 @@ const createApp = (): Application => {
   pemeriksaanRouter.post(
     '/:kode/pemeriksaan/fisik',
     validate(pemeriksaanFisikSchema),
-    pemeriksaanController.createPemeriksaanFisik
+    asyncHandler(pemeriksaanController.createPemeriksaanFisik)
   );
 
   /**
@@ -436,7 +457,7 @@ const createApp = (): Application => {
   pemeriksaanRouter.post(
     '/:kode/pemeriksaan/kesehatan',
     validate(pemeriksaanKesehatanSchema),
-    pemeriksaanController.createPemeriksaanKesehatan
+    asyncHandler(pemeriksaanController.createPemeriksaanKesehatan)
   );
 
   /**
@@ -452,7 +473,7 @@ const createApp = (): Application => {
   pemeriksaanRouter.post(
     '/:kode/pemeriksaan',
     validate(pemeriksaanGabunganSchema),
-    pemeriksaanController.createPemeriksaanGabungan
+    asyncHandler(pemeriksaanController.createPemeriksaanGabungan)
   );
 
   apiRouter.use('/lansia', pemeriksaanRouter);

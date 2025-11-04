@@ -113,6 +113,7 @@ export const validate = <T>(schema: ZodSchema<T>, target: ValidationTarget = 'bo
 
       // Attach validated data kembali ke request
       // Data sudah di-transform oleh Zod (trim, parse, dll)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (req as any)[target] = validatedData;
 
       // Log validation success
