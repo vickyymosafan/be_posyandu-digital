@@ -121,12 +121,17 @@ export const login = async (req: Request, res: Response, next: NextFunction): Pr
       userAgent: req.get('user-agent'),
     });
 
-    // Return user data (tanpa email untuk security)
-    // Hanya return data yang diperlukan oleh client
+    // Return token dan user data
+    // Token juga disimpan di cookie untuk middleware
+    // Token di response body untuk frontend API client
     res.status(200).json({
-      id: user.id,
-      nama: user.nama,
-      role: user.role,
+      token,
+      user: {
+        id: user.id,
+        nama: user.nama,
+        email: user.email,
+        role: user.role,
+      },
     });
   } catch (error) {
     // Convert generic errors ke AuthenticationError untuk consistency
