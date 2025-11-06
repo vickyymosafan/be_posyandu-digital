@@ -12,8 +12,10 @@ import serverless from 'serverless-http';
 import app from '../src/app';
 
 // Export default handler untuk Vercel
-export default serverless(app, {
+const handler = serverless(app, {
   binary: true,
   request: { key: 'originalRequest' },
   response: { key: 'originalResponse' },
 });
+
+export default handler;

@@ -479,7 +479,9 @@ const createApp = (): Application => {
   apiRouter.use('/lansia', pemeriksaanRouter);
 
   // Mount API router
-  app.use('/api', apiRouter);
+  // For Vercel serverless, routes are already under /api via the function path
+  // So we mount at root to avoid /api/api duplication
+  app.use('/', apiRouter);
 
   // ============================================
   // 404 HANDLER
