@@ -32,7 +32,6 @@
 
     /* Emit */
     "outDir": "./dist",
-    "rootDir": "./src",
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
@@ -44,7 +43,7 @@
     /* Type Acquisition */
     "types": ["node", "jest"]
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "api/**/*"],
   "exclude": ["node_modules", "dist", "tests", "prisma", "**/*.test.ts", "**/*.spec.ts"],
   "ts-node": {
     "require": ["tsconfig-paths/register"],

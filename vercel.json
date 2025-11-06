@@ -1,22 +1,11 @@
 {
   "version": 2,
-  "buildCommand": "npm run prisma:generate && npm run build",
+  "buildCommand": "npm run prisma:generate",
   "installCommand": "npm install",
-  "outputDirectory": "dist",
-  "builds": [
+  "rewrites": [
     {
-      "src": "dist/serverless.js",
-      "use": "@vercel/node"
+      "source": "/(.*)",
+      "destination": "/api"
     }
-  ],
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "dist/serverless.js"
-    }
-  ],
-  "env": {
-    "NODE_ENV": "production"
-  },
-  "regions": ["sin1"]
+  ]
 }

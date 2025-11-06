@@ -477,28 +477,23 @@ Integration tests mencakup:
 
 ## 🚢 Deployment
 
-### Vercel (Serverless)
+### Quick Start
 
-1. Install Vercel CLI:
-```bash
-npm install -g vercel
-```
+Untuk deployment cepat ke Vercel (5 menit):
 
-2. Login ke Vercel:
-```bash
-vercel login
-```
+📖 **[VERCEL_QUICK_START.md](./VERCEL_QUICK_START.md)** - Panduan deployment cepat
 
-3. Deploy:
-```bash
-vercel
-```
+### Dokumentasi Lengkap
 
-4. Set environment variables di Vercel Dashboard:
-   - `DATABASE_URL`
-   - `JWT_SECRET`
-   - `NODE_ENV=production`
-   - `APP_URL`
+Untuk deployment production dengan best practices:
+
+📖 **[DEPLOYMENT.md](./DEPLOYMENT.md)** - Dokumentasi deployment lengkap
+
+### Production Checklist
+
+Sebelum deploy ke production, pastikan semua checklist terpenuhi:
+
+📋 **[PRODUCTION_CHECKLIST.md](./PRODUCTION_CHECKLIST.md)** - Checklist deployment production
 
 ### Environment Variables untuk Production
 
@@ -511,6 +506,11 @@ NODE_ENV="production"
 APP_URL="https://your-frontend-url.com"
 TIMEZONE="Asia/Jakarta"
 ```
+
+**⚠️ PENTING:** 
+- Generate JWT secret baru dengan: `node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"`
+- Jangan gunakan default value dari `.env.example`
+- Gunakan connection pooler untuk database (Supabase/Neon)
 
 ## 🔒 Security
 

@@ -1,9 +1,9 @@
 /**
  * Database Seeder untuk Sistem Backend Posyandu Lansia
- * 
+ *
  * Seeder ini membuat admin user default jika belum ada.
  * Seeder bersifat idempotent - tidak akan menimpa data yang sudah ada.
- * 
+ *
  * Environment Variables:
  * - ADMIN_NAME: Nama admin (default: "Admin Posyandu")
  * - ADMIN_EMAIL: Email admin (default: "admin@posyandu.local")
@@ -18,33 +18,33 @@ const prisma = new PrismaClient();
 
 /**
  * Generate password acak yang aman
- * 
+ *
  * Password yang di-generate memiliki karakteristik:
  * - Panjang 16 karakter
  * - Kombinasi huruf besar, huruf kecil, angka, dan simbol
  * - Menggunakan crypto.randomBytes untuk randomness yang kuat
- * 
+ *
  * @returns Password acak yang aman
  */
 function generateSecurePassword(): string {
   const length = 16;
   const charset = 'abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789!@#$%^&*';
   const charsetLength = charset.length;
-  
+
   let password = '';
   const randomBytes = crypto.randomBytes(length);
-  
+
   for (let i = 0; i < length; i++) {
     const randomIndex = randomBytes[i] % charsetLength;
     password += charset[randomIndex];
   }
-  
+
   return password;
 }
 
 /**
  * Hash password menggunakan bcrypt
- * 
+ *
  * @param password - Password plain text yang akan di-hash
  * @returns Password yang sudah di-hash
  */
@@ -55,7 +55,7 @@ async function hashPassword(password: string): Promise<string> {
 
 /**
  * Main seeder function
- * 
+ *
  * Membuat admin user default jika belum ada di database.
  * Seeder bersifat idempotent - tidak akan menimpa data yang sudah ada.
  */
@@ -66,7 +66,7 @@ async function main() {
   const adminName = process.env.ADMIN_NAME || 'Admin Posyandu';
   const adminEmail = process.env.ADMIN_EMAIL || 'admin@posyandu.local';
   let adminPassword = process.env.ADMIN_PASS || '';
-  
+
   // Flag untuk track apakah password di-generate
   let isPasswordGenerated = false;
 
@@ -117,7 +117,7 @@ async function main() {
     console.log(`   Email: ${admin.email}`);
     console.log(`   Role: ${admin.role}`);
     console.log(`   Status: ${admin.aktif ? 'Aktif' : 'Tidak Aktif'}`);
-    
+
     // Tampilkan password jika di-generate
     if (isPasswordGenerated) {
       console.log('\n🔑 PENTING - Simpan kredensial ini:');
@@ -130,7 +130,6 @@ async function main() {
     } else {
       console.log('\n✅ Menggunakan password dari environment variable ADMIN_PASS\n');
     }
-
   } catch (error) {
     console.error('\n❌ Error saat seeding database:');
     console.error(error);

@@ -88,7 +88,7 @@ const createApp = (): Application => {
    * - optionsSuccessStatus: 200 untuk legacy browser support
    */
   const corsOptions = {
-    origin: process.env.APP_URL || 'http://localhost:3000',
+    origin: process.env.APP_URL || 'https://posyandu-digital.vercel.app',
     credentials: true,
     optionsSuccessStatus: 200,
   };

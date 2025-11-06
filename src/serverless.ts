@@ -38,7 +38,8 @@ import app from './app';
  * // AWS Lambda
  * exports.handler = serverless(app);
  */
-export const handler = serverless(app, {
+// Export sebagai default untuk Vercel
+export default serverless(app, {
   // Binary media types yang akan di-handle sebagai binary
   // Auto-detect jika tidak dispesifikasikan
   binary: true,
@@ -54,6 +55,13 @@ export const handler = serverless(app, {
     // Preserve original response info untuk logging
     key: 'originalResponse',
   },
+});
+
+// Export juga sebagai named export untuk compatibility
+export const handler = serverless(app, {
+  binary: true,
+  request: { key: 'originalRequest' },
+  response: { key: 'originalResponse' },
 });
 
 /**
