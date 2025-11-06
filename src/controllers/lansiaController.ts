@@ -17,7 +17,7 @@ import { Request, Response, NextFunction } from 'express';
 import {
   createLansiaWithKode,
   getLansiaByKode,
-  findMinimalLansiaByKode,
+  searchMinimalLansia,
 } from '../services/lansiaService';
 import { findAllLansia } from '../repositories/lansiaRepository';
 import { findPemeriksaanByLansiaId } from '../repositories/pemeriksaanRepository';
@@ -365,16 +365,17 @@ export const getLansiaByKodeParam = async (
  * Handle POST /api/find
  *
  * Proses:
- * 1. Extract kode dari request body (sudah divalidasi oleh validateMiddleware)
- * 2. Call lansiaService.findMinimalLansiaByKode untuk get minimal data
- * 3. Return minimal lansia data (id, kode, nama, tanggalLahir)
+ * 1. Extract query dari request body (sudah divalidasi oleh validateMiddleware)
+ * 2. Call lansiaService.searchMinimalLansia untuk search berdasarkan query
+ * 3. Return array of minimal lansia data (id, kode, nama, tanggalLahir)
  *
  * Validasi:
  * - Request body divalidasi oleh validateMiddleware dengan findLansiaSchema
- * - Kode tidak boleh kosong
+ * - Query tidak boleh kosong
  *
  * Use Case:
- * - Endpoint ini digunakan untuk quick lookup sebelum pemeriksaan
+ * - Endpoint ini digunakan untuk search lansia sebelum pemeriksaan
+ * - Search berdasarkan kode, nama, atau NIK
  * - Return hanya data minimal yang diperlukan untuk konfirmasi identitas
  * - Lebih ringan daripada GET /api/lansia/:kode
  *
@@ -382,31 +383,45 @@ export const getLansiaByKodeParam = async (
  * - Endpoint ini protected oleh authMiddleware
  * - Dapat diakses oleh ADMIN dan PETUGAS
  *
- * @param req - Express request object dengan body: { kode: string }
+ * @param req - Express request object dengan body: { query: string }
  * @param res - Express response object
  * @param next - Express next function untuk error handling
  *
  * @example
- * // Request
+ * // Request - Search by kode
  * POST /api/find
  * Cookie: token=<jwt_token>
  * Content-Type: application/json
  * {
- *   "kode": "pasien202511031a"
+ *   "query": "pasien202511031a"
+ * }
+ *
+ * // Request - Search by nama
+ * POST /api/find
+ * Cookie: token=<jwt_token>
+ * Content-Type: application/json
+ * {
+ *   "query": "Budi"
  * }
  *
  * // Response (200 OK)
- * {
- *   "id": 1,
- *   "kode": "pasien202511031a",
- *   "nama": "Budi Santoso",
- *   "tanggalLahir": "1950-05-15T00:00:00.000Z"
- * }
+ * [
+ *   {
+ *     "id": 1,
+ *     "kode": "pasien202511031a",
+ *     "nama": "Budi Santoso",
+ *     "tanggalLahir": "1950-05-15T00:00:00.000Z"
+ *   },
+ *   {
+ *     "id": 2,
+ *     "kode": "pasien202511032b",
+ *     "nama": "Budi Wijaya",
+ *     "tanggalLahir": "1955-03-20T00:00:00.000Z"
+ *   }
+ * ]
  *
- * // Response (404 Not Found)
- * {
- *   "error": "Lansia tidak ditemukan"
- * }
+ * // Response (200 OK) - Tidak ditemukan
+ * []
  */
 export const findLansia = async (
   req: Request,
@@ -414,37 +429,31 @@ export const findLansia = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    // Extract kode dari request body
+    // Extract query dari request body
     // Body sudah divalidasi oleh validateMiddleware dengan findLansiaSchema
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    const { kode } = req.body as { kode: string };
+    const { query } = req.body as { query: string };
 
     // Get user info untuk logging
     const userId = req.user?.userId;
 
-    // Call lansiaService untuk find minimal lansia data
-    const minimalData = await findMinimalLansiaByKode(kode);
+    // Call lansiaService untuk search lansia
+    const results = await searchMinimalLansia(query);
 
-    // Log successful find
-    logger.debug('Minimal lansia data berhasil ditemukan via controller', {
-      kode,
-      lansiaId: minimalData.id,
+    // Log successful search
+    logger.debug('Search lansia berhasil via controller', {
+      query,
+      resultCount: results.length,
       requestedBy: userId,
       ip: req.ip,
     });
 
-    // Return minimal lansia data
-    res.status(200).json(minimalData);
+    // Return array of minimal lansia data
+    // Return empty array jika tidak ditemukan (bukan 404)
+    res.status(200).json(results);
   } catch (error) {
-    // Handle specific errors
-    if (error instanceof Error && error.message === 'Lansia tidak ditemukan') {
-      // Convert ke NotFoundError untuk proper status code (404)
-      const notFoundError = new NotFoundError(error.message);
-      next(notFoundError);
-    } else {
-      // Pass error ke error handler middleware
-      next(error);
-    }
+    // Pass error ke error handler middleware
+    next(error);
   }
 };
 

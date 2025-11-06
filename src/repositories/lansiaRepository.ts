@@ -143,3 +143,23 @@ export const deleteLansia = async (id: number): Promise<Lansia> => {
     where: { id },
   });
 };
+
+/**
+ * Mencari lansia berdasarkan query (kode, nama, atau NIK)
+ * Menggunakan case-insensitive search dengan contains
+ *
+ * @param query - Query pencarian
+ * @returns Array of lansia yang cocok dengan query
+ */
+export const searchLansia = async (query: string): Promise<Lansia[]> => {
+  return prisma.lansia.findMany({
+    where: {
+      OR: [
+        { kode: { contains: query, mode: 'insensitive' } },
+        { nama: { contains: query, mode: 'insensitive' } },
+        { nik: { contains: query, mode: 'insensitive' } },
+      ],
+    },
+    orderBy: { createdAt: 'desc' },
+  });
+};

@@ -215,15 +215,16 @@ export const kodePasienQuerySchema = z.object({
 export type KodePasienQueryDTO = z.infer<typeof kodePasienQuerySchema>;
 
 /**
- * Schema untuk find lansia by kode
+ * Schema untuk find/search lansia
+ * Search berdasarkan kode, nama, atau NIK
  *
- * @property kode - Kode pasien lansia
+ * @property query - Query pencarian (kode/nama/NIK)
  */
 export const findLansiaSchema = z.object({
-  kode: z
-    .string({ required_error: 'Kode pasien wajib diisi' })
+  query: z
+    .string({ required_error: 'Query pencarian wajib diisi' })
     .trim()
-    .min(1, 'Kode pasien tidak boleh kosong'),
+    .min(1, 'Query pencarian tidak boleh kosong'),
 });
 
 export type FindLansiaDTO = z.infer<typeof findLansiaSchema>;

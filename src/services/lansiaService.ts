@@ -12,7 +12,12 @@
  */
 
 import { Gender, Lansia } from '@prisma/client';
-import { createLansia, findLansiaByKode, checkNikExists } from '../repositories/lansiaRepository';
+import {
+  createLansia,
+  findLansiaByKode,
+  checkNikExists,
+  searchLansia,
+} from '../repositories/lansiaRepository';
 import { generatePatientId } from '../utils/patientId';
 import logger from '../utils/logger';
 
@@ -165,6 +170,46 @@ export const findMinimalLansiaByKode = async (kode: string): Promise<MinimalLans
       tanggalLahir: lansia.tanggalLahir,
     };
   } catch (error) {
+    throw error;
+  }
+};
+
+/**
+ * Mencari lansia berdasarkan query (kode, nama, atau NIK)
+ * Return minimal data untuk search results
+ *
+ * @param query - Query pencarian
+ * @returns Array of minimal lansia data
+ */
+export const searchMinimalLansia = async (query: string): Promise<MinimalLansiaData[]> => {
+  try {
+    // Call repository function dengan explicit type
+    // searchLansia sudah di-type dengan Promise<Lansia[]> di repository
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+    const lansiaList: Lansia[] = await searchLansia(query);
+
+    logger.debug('Search lansia berhasil', {
+      query,
+      resultCount: lansiaList.length,
+    });
+
+    // Map ke minimal data dengan explicit type
+    const minimalData: MinimalLansiaData[] = lansiaList.map(
+      (lansia: Lansia): MinimalLansiaData => ({
+        id: lansia.id,
+        kode: lansia.kode,
+        nama: lansia.nama,
+        tanggalLahir: lansia.tanggalLahir,
+      })
+    );
+
+    return minimalData;
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    logger.error('Error saat search lansia', {
+      query,
+      error: errorMessage,
+    });
     throw error;
   }
 };
