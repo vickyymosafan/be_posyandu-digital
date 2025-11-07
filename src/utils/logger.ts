@@ -149,8 +149,14 @@ const getTransports = (): winston.transport[] => {
     })
   );
 
-  // File transports untuk production
-  if (process.env.NODE_ENV === 'production') {
+  // Detect if running in serverless environment (Vercel, AWS Lambda, etc)
+  const isServerless =
+    process.env.VERCEL === '1' || process.env.VERCEL_ENV || process.env.AWS_LAMBDA_FUNCTION_NAME;
+
+  // File transports HANYA untuk production NON-SERVERLESS
+  // Serverless environments memiliki read-only filesystem, tidak bisa write files
+  // Logs di serverless akan di-capture via console transport oleh platform
+  if (process.env.NODE_ENV === 'production' && !isServerless) {
     // Error log file - hanya error level
     transports.push(
       new winston.transports.File({
