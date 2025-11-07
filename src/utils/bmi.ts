@@ -1,8 +1,16 @@
 /**
  * Utility untuk kalkulasi dan klasifikasi Body Mass Index (BMI)
  *
- * Menggunakan standar klasifikasi BMI Asia Pasifik (WHO Asia-Pacific)
+ * Menggunakan standar klasifikasi BMI Asia Pasifik (WHO Asia-Pacific - Revised)
  * yang lebih sesuai untuk populasi Asia dibandingkan standar WHO global.
+ *
+ * Standar yang digunakan:
+ * - < 17.0: Sangat Kurang
+ * - 17.0 - 18.4: Kurang
+ * - 18.5 - 25.0: Normal
+ * - 25.1 - 27.0: Berlebih
+ * - 27.1 - 30.0: Obesitas I
+ * - > 30.0: Obesitas II
  *
  * Prinsip yang diterapkan:
  * - Single Responsibility: Fokus pada kalkulasi dan klasifikasi BMI
@@ -34,29 +42,27 @@ const VALIDASI = {
 } as const;
 
 /**
- * Constants untuk threshold BMI berdasarkan standar Asia Pasifik
- * Sumber: WHO Asia-Pacific Guidelines
+ * Constants untuk threshold BMI berdasarkan standar Asia Pasifik (Updated)
+ * Sumber: WHO Asia-Pacific Guidelines (Revised)
  */
 const BMI_THRESHOLD = {
   SANGAT_KURANG: 17.0,
   KURANG: 18.5,
-  NORMAL: 23.0,
-  KELEBIHAN: 25.0,
-  OBESITAS_I: 30.0,
-  OBESITAS_II: 35.0,
+  NORMAL: 25.1,
+  BERLEBIH: 27.1,
+  OBESITAS_I: 30.1,
 } as const;
 
 /**
- * Kategori BMI berdasarkan standar Asia Pasifik
+ * Kategori BMI berdasarkan standar Asia Pasifik (Updated)
  */
 const KATEGORI_BMI = {
-  SANGAT_KURANG: 'Berat Badan Sangat Kurang',
-  KURANG: 'Berat Badan Kurang',
+  SANGAT_KURANG: 'Sangat Kurang',
+  KURANG: 'Kurang',
   NORMAL: 'Normal',
-  KELEBIHAN: 'Kelebihan Berat Badan',
+  BERLEBIH: 'Berlebih',
   OBESITAS_I: 'Obesitas I',
   OBESITAS_II: 'Obesitas II',
-  OBESITAS_III: 'Obesitas III',
 } as const;
 
 /**
@@ -100,16 +106,15 @@ function validasiBerat(beratKg: number): void {
 }
 
 /**
- * Klasifikasi nilai BMI berdasarkan standar Asia Pasifik
+ * Klasifikasi nilai BMI berdasarkan standar Asia Pasifik (Updated)
  *
- * Kategori BMI Asia Pasifik (WHO):
- * - < 17.0: Berat Badan Sangat Kurang
- * - 17.0 - 18.4: Berat Badan Kurang
- * - 18.5 - 22.9: Normal
- * - 23.0 - 24.9: Kelebihan Berat Badan
- * - 25.0 - 29.9: Obesitas I
- * - 30.0 - 34.9: Obesitas II
- * - ≥ 35.0: Obesitas III
+ * Kategori BMI Asia Pasifik (WHO - Revised):
+ * - < 17.0: Sangat Kurang
+ * - 17.0 - 18.4: Kurang
+ * - 18.5 - 25.0: Normal
+ * - 25.1 - 27.0: Berlebih
+ * - 27.1 - 30.0: Obesitas I
+ * - > 30.0: Obesitas II
  *
  * @param bmi - Nilai BMI yang akan diklasifikasikan
  * @returns Kategori BMI
@@ -127,19 +132,15 @@ function klasifikasiBMI(bmi: number): string {
     return KATEGORI_BMI.NORMAL;
   }
 
-  if (bmi < BMI_THRESHOLD.KELEBIHAN) {
-    return KATEGORI_BMI.KELEBIHAN;
+  if (bmi < BMI_THRESHOLD.BERLEBIH) {
+    return KATEGORI_BMI.BERLEBIH;
   }
 
   if (bmi < BMI_THRESHOLD.OBESITAS_I) {
     return KATEGORI_BMI.OBESITAS_I;
   }
 
-  if (bmi < BMI_THRESHOLD.OBESITAS_II) {
-    return KATEGORI_BMI.OBESITAS_II;
-  }
-
-  return KATEGORI_BMI.OBESITAS_III;
+  return KATEGORI_BMI.OBESITAS_II;
 }
 
 /**
@@ -156,7 +157,7 @@ function klasifikasiBMI(bmi: number): string {
  * @example
  * ```typescript
  * const result = hitungBMI(60, 160);
- * console.log(result); // { nilai: 23.44, kategori: 'Kelebihan Berat Badan' }
+ * console.log(result); // { nilai: 23.44, kategori: 'Normal' }
  * ```
  */
 export function hitungBMI(beratKg: number, tinggiCm: number): BMIResult {
