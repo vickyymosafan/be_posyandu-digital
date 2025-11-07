@@ -1,42 +1,19 @@
-# Vercel Ignore File
-# File dan folder yang tidak perlu di-upload ke Vercel
-
-# Development
 node_modules
 .env
 .env.local
-.env.*.local
-
-# Testing
-tests
-coverage
-*.test.ts
-*.spec.ts
-**/*.test.ts
-**/*.spec.ts
-
-# Build artifacts (akan di-build di Vercel)
 dist
-
-# Documentation
-*.md
-!README.md
-
-# Git
-.git
-.gitignore
-
-# IDE
-.vscode
-.idea
-*.swp
-*.swo
-
-# Logs
+build
 logs
 *.log
-npm-debug.log*
-
-# OS
+testing
+*.md
+!README.md
+.vscode
+.idea
 .DS_Store
-Thumbs.db
+.git
+.gitignore
+uploads/
+scripts/
+coverage/
+.husky/
