@@ -26,6 +26,9 @@ import {
   authMiddleware,
   roleGuard,
   validate,
+  dashboardCache,
+  listCache,
+  detailCache,
 } from './middlewares';
 
 // Controllers
@@ -289,7 +292,7 @@ const createApp = (): Application => {
    * @middleware authMiddleware - Autentikasi JWT
    * @controller dashboardController.getStats
    */
-  dashboardRouter.get('/stats', asyncHandler(dashboardController.getStats));
+  dashboardRouter.get('/stats', dashboardCache, asyncHandler(dashboardController.getStats));
 
   apiRouter.use('/dashboard', dashboardRouter);
 
@@ -448,7 +451,7 @@ const createApp = (): Application => {
    * @middleware authMiddleware - Autentikasi JWT
    * @controller lansiaController.getLansia
    */
-  lansiaRouter.get('/', asyncHandler(lansiaController.getLansia));
+  lansiaRouter.get('/', listCache, asyncHandler(lansiaController.getLansia));
 
   /**
    * GET /api/lansia/:kode
@@ -458,7 +461,7 @@ const createApp = (): Application => {
    * @middleware authMiddleware - Autentikasi JWT
    * @controller lansiaController.getLansiaByKodeParam
    */
-  lansiaRouter.get('/:kode', asyncHandler(lansiaController.getLansiaByKodeParam));
+  lansiaRouter.get('/:kode', detailCache, asyncHandler(lansiaController.getLansiaByKodeParam));
 
   /**
    * GET /api/lansia/:kode/pemeriksaan

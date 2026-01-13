@@ -19,3 +19,6 @@ export * from './errorHandler';
 
 // Rate Limiter Middleware
 export * from './rateLimiter';
+
+// Cache Control Middleware
+export * from './cacheMiddleware';
