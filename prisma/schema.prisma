@@ -50,6 +50,8 @@ model User {
   @@map("users")
   @@index([email])
   @@index([role])
+  // Performance: Composite index for filtering active users by role (dashboard stats)
+  @@index([role, aktif])
 }
 
 /// Model Lansia untuk data lanjut usia
@@ -72,6 +74,9 @@ model Lansia {
   @@index([kode])
   @@index([nik])
   @@index([createdAt])
+  // Performance: Composite indexes for search + sort operations
+  @@index([nama, createdAt])
+  @@index([gender, createdAt])
 }
 
 /// Model Pemeriksaan untuk data pemeriksaan fisik dan kesehatan lansia
@@ -113,4 +118,7 @@ model Pemeriksaan {
   @@index([lansiaId])
   @@index([tanggal])
   @@index([createdAt])
+  // Performance: Composite indexes for common query patterns
+  @@index([lansiaId, tanggal])
+  @@index([tanggal, createdAt])
 }
