@@ -161,72 +161,46 @@ export const createLansia = async (
  * Proses:
  * 1. Check apakah ada query parameter 'kode'
  * 2. Jika ada kode, return single lansia yang sesuai
- * 3. Jika tidak ada kode, return array of all lansia
+ * 3. Jika tidak ada kode, return paginated array of lansia
  *
  * Query Parameters:
  * - kode (optional): Kode pasien untuk filter
+ * - page (optional): Halaman yang diminta (default: 1)
+ * - limit (optional): Jumlah item per halaman (default: 20, max: 100)
+ * - select (optional): Comma-separated list of fields to return
  *
  * Security:
  * - Endpoint ini protected oleh authMiddleware
  * - Dapat diakses oleh ADMIN dan PETUGAS
  *
- * @param req - Express request object dengan optional query: { kode?: string }
+ * @param req - Express request object dengan optional query params
  * @param res - Express response object
  * @param next - Express next function untuk error handling
  *
  * @example
- * // Request - Get all lansia
- * GET /api/lansia
+ * // Request - Get paginated lansia
+ * GET /api/lansia?page=1&limit=20
  * Cookie: token=<jwt_token>
  *
  * // Response (200 OK)
- * [
- *   {
- *     "id": 1,
- *     "kode": "pasien202511031a",
- *     "nik": "3201234567890123",
- *     "kk": "3201234567890123",
- *     "nama": "Budi Santoso",
- *     "gender": "L",
- *     "tanggalLahir": "1950-05-15T00:00:00.000Z",
- *     "alamat": "Jl. Merdeka No. 123, Jakarta",
- *     "createdAt": "2025-11-03T10:00:00.000Z"
- *   },
- *   ...
- * ]
+ * {
+ *   "data": [...],
+ *   "pagination": { "page": 1, "limit": 20, "total": 100, "totalPages": 5 }
+ * }
  *
  * @example
- * // Request - Get lansia by kode
- * GET /api/lansia?kode=pasien202511031a
- * Cookie: token=<jwt_token>
- *
- * // Response (200 OK)
- * [
- *   {
- *     "id": 1,
- *     "kode": "pasien202511031a",
- *     "nik": "3201234567890123",
- *     "kk": "3201234567890123",
- *     "nama": "Budi Santoso",
- *     "gender": "L",
- *     "tanggalLahir": "1950-05-15T00:00:00.000Z",
- *     "alamat": "Jl. Merdeka No. 123, Jakarta",
- *     "createdAt": "2025-11-03T10:00:00.000Z"
- *   }
- * ]
- *
- * // Response (200 OK) - kode tidak ditemukan
- * []
+ * // Request - Get lansia with field selection
+ * GET /api/lansia?select=id,kode,nama,tanggalLahir
  */
 export const getLansia = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    // Extract kode dari query parameter
-    const { kode } = req.query;
+    // Extract query parameters
+    const { kode, page, limit, select } = req.query;
 
     // Get user info untuk logging
     const userId = req.user?.userId;
 
-    // Jika ada kode, filter by kode
+    // Jika ada kode, filter by kode (legacy behavior)
     if (kode && typeof kode === 'string') {
       // Get lansia by kode
       const lansia = await getLansiaByKode(kode);
@@ -242,18 +216,36 @@ export const getLansia = async (req: Request, res: Response, next: NextFunction)
       // Return array dengan single lansia untuk konsistensi
       res.status(200).json([lansia]);
     } else {
-      // Get all lansia
-      const lansiaList = await findAllLansia();
+      // Parse pagination params
+      const pageNum = page ? Math.max(1, parseInt(page as string, 10)) : 1;
+      const limitNum = limit ? Math.min(100, Math.max(1, parseInt(limit as string, 10))) : 20;
+
+      // Parse select fields
+      let selectFields: ('id' | 'kode' | 'nik' | 'kk' | 'nama' | 'gender' | 'tanggalLahir' | 'alamat' | 'createdAt')[] | undefined;
+      if (select && typeof select === 'string') {
+        const validFields = ['id', 'kode', 'nik', 'kk', 'nama', 'gender', 'tanggalLahir', 'alamat', 'createdAt'];
+        selectFields = select.split(',').filter((f) => validFields.includes(f.trim())) as typeof selectFields;
+      }
+
+      // Get paginated lansia
+      const result = await findAllLansia({
+        page: pageNum,
+        limit: limitNum,
+        select: selectFields,
+      });
 
       // Log successful retrieval
       logger.debug('Daftar lansia berhasil diambil via controller', {
-        count: lansiaList.length,
+        page: pageNum,
+        limit: limitNum,
+        count: result.data.length,
+        total: result.pagination.total,
         requestedBy: userId,
         ip: req.ip,
       });
 
-      // Return array of lansia
-      res.status(200).json(lansiaList);
+      // Return paginated result
+      res.status(200).json(result);
     }
   } catch (error) {
     // Handle specific errors

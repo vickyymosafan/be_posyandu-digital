@@ -62,12 +62,79 @@ export const findLansiaByNIK = async (nik: string): Promise<Lansia | null> => {
 };
 
 /**
- * Mengambil semua data lansia
+ * Interface untuk pagination options
+ */
+export interface PaginationOptions {
+  page?: number;
+  limit?: number;
+  orderBy?: Prisma.LansiaOrderByWithRelationInput;
+  select?: (keyof Lansia)[];
+}
+
+/**
+ * Interface untuk paginated result
+ */
+export interface PaginatedResult<T> {
+  data: T[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+}
+
+/**
+ * Mengambil semua data lansia dengan pagination dan field selection
  *
- * @param options - Options untuk filtering dan pagination (optional)
+ * @param options - Options untuk filtering, pagination, dan field selection
+ * @returns Paginated result dengan data lansia
+ */
+export const findAllLansia = async (
+  options?: PaginationOptions
+): Promise<PaginatedResult<Partial<Lansia>>> => {
+  const page = options?.page || 1;
+  const limit = options?.limit || 20;
+  const skip = (page - 1) * limit;
+
+  // Build select object dari array of fields
+  let selectObject: Prisma.LansiaSelect | undefined;
+  if (options?.select && options.select.length > 0) {
+    selectObject = {};
+    for (const field of options.select) {
+      selectObject[field] = true;
+    }
+  }
+
+  // Execute count dan findMany in parallel
+  const [total, data] = await Promise.all([
+    prisma.lansia.count(),
+    prisma.lansia.findMany({
+      skip,
+      take: limit,
+      orderBy: options?.orderBy || { createdAt: 'desc' },
+      ...(selectObject && { select: selectObject }),
+    }),
+  ]);
+
+  return {
+    data: data as Partial<Lansia>[],
+    pagination: {
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit),
+    },
+  };
+};
+
+/**
+ * Mengambil semua data lansia tanpa pagination (legacy support)
+ *
+ * @param options - Options untuk filtering
  * @returns Array of lansia
  */
-export const findAllLansia = async (options?: {
+export const findAllLansiaLegacy = async (options?: {
   skip?: number;
   take?: number;
   orderBy?: Prisma.LansiaOrderByWithRelationInput;
