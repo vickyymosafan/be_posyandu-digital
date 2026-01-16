@@ -34,6 +34,7 @@ import * as profilController from './controllers/profilController';
 import * as petugasController from './controllers/petugasController';
 import * as lansiaController from './controllers/lansiaController';
 import * as pemeriksaanController from './controllers/pemeriksaanController';
+import * as dashboardController from './controllers/dashboardController';
 
 // Validators
 import {
@@ -262,6 +263,35 @@ const createApp = (): Application => {
   authRouter.post('/logout', authMiddleware, authController.logout);
 
   apiRouter.use('/auth', authRouter);
+
+  // --------------------------------------------
+  // DASHBOARD ROUTES (Performance Optimized)
+  // --------------------------------------------
+
+  /**
+   * Dashboard Routes
+   *
+   * Endpoints untuk statistik dashboard.
+   * Aggregated endpoint untuk mengurangi multiple API calls.
+   * Memerlukan autentikasi.
+   */
+  const dashboardRouter = express.Router();
+
+  // Apply auth middleware untuk semua dashboard routes
+  dashboardRouter.use(authMiddleware);
+
+  /**
+   * GET /api/dashboard/stats
+   *
+   * Get aggregated dashboard statistics dalam satu call.
+   * Menggantikan multiple API calls ke petugas, lansia, dan pemeriksaan.
+   *
+   * @middleware authMiddleware - Autentikasi JWT
+   * @controller dashboardController.getStats
+   */
+  dashboardRouter.get('/stats', asyncHandler(dashboardController.getStats));
+
+  apiRouter.use('/dashboard', dashboardRouter);
 
   // --------------------------------------------
   // PROFILE ROUTES
