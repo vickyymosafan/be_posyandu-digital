@@ -17,6 +17,7 @@ import express, { Application, Request, Response } from 'express';
 import helmet from 'helmet';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
+import compression from 'compression';
 
 // Middlewares
 import {
@@ -65,6 +66,56 @@ const createApp = (): Application => {
   const app = express();
 
   // ============================================
+  // HEALTH CHECK ENDPOINT (Early exit for performance)
+  // ============================================
+
+  /**
+   * Health Check
+   *
+   * Endpoint untuk monitoring dan health checks.
+   * Ditempatkan paling atas untuk skip semua middlewares.
+   * Tidak memerlukan autentikasi.
+   *
+   * @route GET /health
+   * @returns Status OK dengan timestamp
+   */
+  app.get('/health', (_req: Request, res: Response) => {
+    res.status(200).json({
+      status: 'OK',
+      timestamp: new Date().toISOString(),
+      environment: process.env.NODE_ENV || 'development',
+    });
+  });
+
+  // ============================================
+  // RESPONSE COMPRESSION
+  // ============================================
+
+  /**
+   * Response Compression
+   *
+   * Compress semua responses menggunakan gzip.
+   * Ditempatkan sebelum body parsers untuk optimal performance.
+   *
+   * Konfigurasi:
+   * - level: 6 (balance antara speed dan compression ratio)
+   * - threshold: 1024 bytes (hanya compress response > 1KB)
+   * - filter: Skip jika client request 'x-no-compression' header
+   */
+  app.use(
+    compression({
+      filter: (req, res) => {
+        if (req.headers['x-no-compression']) {
+          return false;
+        }
+        return compression.filter(req, res);
+      },
+      level: 6,
+      threshold: 1024,
+    })
+  );
+
+  // ============================================
   // SECURITY MIDDLEWARES
   // ============================================
 
@@ -101,15 +152,15 @@ const createApp = (): Application => {
   /**
    * JSON Body Parser
    * Parse incoming requests dengan JSON payloads
-   * Limit: 10mb untuk prevent large payload attacks
+   * Limit: 1mb untuk better security (reduced from 10mb)
    */
-  app.use(express.json({ limit: '10mb' }));
+  app.use(express.json({ limit: '1mb' }));
 
   /**
    * URL-encoded Body Parser
    * Parse incoming requests dengan URL-encoded payloads
    */
-  app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+  app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 
   /**
    * Cookie Parser
