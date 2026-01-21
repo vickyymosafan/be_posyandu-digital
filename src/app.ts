@@ -131,8 +131,31 @@ const createApp = (): Application => {
    * - X-Frame-Options: DENY
    * - X-XSS-Protection: 1; mode=block
    * - Strict-Transport-Security (HSTS)
+   * - Content-Security-Policy (CSP)
    */
-  app.use(helmet());
+  app.use(
+    helmet({
+      contentSecurityPolicy: {
+        directives: {
+          defaultSrc: ["'self'"],
+          scriptSrc: ["'self'"],
+          styleSrc: ["'self'", "'unsafe-inline'"],
+          imgSrc: ["'self'", 'data:', 'blob:'],
+          fontSrc: ["'self'"],
+          objectSrc: ["'none'"],
+          frameAncestors: ["'none'"],
+          formAction: ["'self'"],
+          upgradeInsecureRequests: [],
+        },
+      },
+      crossOriginEmbedderPolicy: false, // Disable for API compatibility
+      hsts: {
+        maxAge: 31536000, // 1 year
+        includeSubDomains: true,
+        preload: true,
+      },
+    })
+  );
 
   /**
    * CORS - Cross-Origin Resource Sharing
@@ -181,14 +204,14 @@ const createApp = (): Application => {
    * Login Rate Limiter
    *
    * Proteksi dari brute force attacks pada login endpoint.
-   * Konfigurasi:
-   * - 5 attempts per 15 menit per IP address
+   * Konfigurasi yang lebih ketat untuk keamanan:
+   * - 3 attempts per 15 menit per IP address (reduced from 5)
    * - Block duration: 15 menit setelah limit exceeded
    */
   const loginRateLimiter = createRateLimiter({
-    points: 5,
+    points: 3, // Reduced from 5 for better security
     duration: 900, // 15 menit
-    message: 'Terlalu banyak percobaan login, coba lagi nanti',
+    message: 'Terlalu banyak percobaan login, coba lagi dalam 15 menit',
     keyPrefix: 'login',
   });
 
