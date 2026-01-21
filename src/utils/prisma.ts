@@ -16,16 +16,29 @@
  * - Lazy Initialization: Client dibuat saat pertama kali diakses
  * - Hot Reload Support: Menyimpan instance di global untuk development
  * - Connection Pooling: Efisien menggunakan database connections
+ * - Accelerate Support: Menggunakan Prisma Accelerate untuk serverless (Vercel)
  */
 
 import { PrismaClient } from '@prisma/client';
+import { withAccelerate } from '@prisma/extension-accelerate';
 import logger from './logger';
 
+// Type for extended Prisma Client with Accelerate
+type PrismaClientWithAccelerate = ReturnType<typeof createPrismaClient>;
+
 // Extend global namespace untuk TypeScript
-// eslint-disable-next-line no-var, vars-on-top
 declare global {
-  // eslint-disable-next-line no-var
-  var prisma: PrismaClient | undefined;
+  // eslint-disable-next-line no-var, vars-on-top
+  var prisma: PrismaClientWithAccelerate | undefined;
+}
+
+/**
+ * Create Prisma Client with Accelerate extension
+ */
+function createPrismaClient() {
+  return new PrismaClient({
+    log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
+  }).$extends(withAccelerate());
 }
 
 /**
@@ -39,11 +52,7 @@ declare global {
  * - connection_limit: Default 10 untuk optimal performance
  * - pool_timeout: Default 10 detik untuk wait connection
  */
-export const prisma =
-  global.prisma ||
-  new PrismaClient({
-    log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
-  });
+export const prisma = global.prisma || createPrismaClient();
 
 // Simpan instance di global untuk development hot reload
 if (process.env.NODE_ENV !== 'production') {
@@ -56,6 +65,7 @@ if (process.env.NODE_ENV !== 'production') {
  */
 export const disconnectPrisma = async (): Promise<void> => {
   logger.info('Disconnecting Prisma client...');
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-call
   await prisma.$disconnect();
   logger.info('Prisma client disconnected');
 };
@@ -68,6 +78,7 @@ export const disconnectPrisma = async (): Promise<void> => {
  */
 export const checkDatabaseHealth = async (): Promise<boolean> => {
   try {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     await prisma.$queryRaw`SELECT 1`;
     return true;
   } catch (error) {
