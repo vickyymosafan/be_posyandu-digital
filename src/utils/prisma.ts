@@ -16,28 +16,37 @@
  * - Lazy Initialization: Client dibuat saat pertama kali diakses
  * - Hot Reload Support: Menyimpan instance di global untuk development
  * - Connection Pooling: Efisien menggunakan database connections
- * - Accelerate Support: Menggunakan Prisma Accelerate untuk serverless (Vercel)
+ * - Accelerate Support: Menggunakan Prisma Accelerate untuk serverless (Vercel) - PRODUCTION ONLY
  */
 
 import { PrismaClient } from '@prisma/client';
 import { withAccelerate } from '@prisma/extension-accelerate';
 import logger from './logger';
 
-// Type for extended Prisma Client with Accelerate
-type PrismaClientWithAccelerate = ReturnType<typeof createPrismaClient>;
+// Check if we're in production (Vercel uses Accelerate)
+const isProduction = process.env.NODE_ENV === 'production';
 
 // Extend global namespace untuk TypeScript
 declare global {
   // eslint-disable-next-line no-var, vars-on-top
-  var prisma: PrismaClientWithAccelerate | undefined;
+  var prisma: PrismaClient | ReturnType<typeof createPrismaClientWithAccelerate> | undefined;
 }
 
 /**
- * Create Prisma Client with Accelerate extension
+ * Create Prisma Client WITHOUT Accelerate (for development with direct DB connection)
  */
 function createPrismaClient() {
   return new PrismaClient({
-    log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
+    log: ['query', 'error', 'warn'],
+  });
+}
+
+/**
+ * Create Prisma Client WITH Accelerate extension (for production/Vercel)
+ */
+function createPrismaClientWithAccelerate() {
+  return new PrismaClient({
+    log: ['error'],
   }).$extends(withAccelerate());
 }
 
@@ -46,16 +55,13 @@ function createPrismaClient() {
  *
  * Di development, instance disimpan di global object untuk mendukung
  * hot reload tanpa membuat multiple connections.
- * Di production, instance dibuat sekali dan digunakan kembali.
- *
- * Connection pooling dikonfigurasi melalui DATABASE_URL parameters:
- * - connection_limit: Default 10 untuk optimal performance
- * - pool_timeout: Default 10 detik untuk wait connection
+ * Di production, instance dibuat sekali dan digunakan kembali dengan Accelerate.
  */
-export const prisma = global.prisma || createPrismaClient();
+export const prisma =
+  global.prisma || (isProduction ? createPrismaClientWithAccelerate() : createPrismaClient());
 
 // Simpan instance di global untuk development hot reload
-if (process.env.NODE_ENV !== 'production') {
+if (!isProduction) {
   global.prisma = prisma;
 }
 
