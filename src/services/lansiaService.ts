@@ -41,6 +41,7 @@ export interface MinimalLansiaData {
   kode: string;
   nama: string;
   tanggalLahir: Date;
+  gender: 'L' | 'P';
 }
 
 /**
@@ -168,6 +169,7 @@ export const findMinimalLansiaByKode = async (kode: string): Promise<MinimalLans
       kode: lansia.kode,
       nama: lansia.nama,
       tanggalLahir: lansia.tanggalLahir,
+      gender: lansia.gender as 'L' | 'P',
     };
   } catch (error) {
     throw error;
@@ -200,6 +202,7 @@ export const searchMinimalLansia = async (query: string): Promise<MinimalLansiaD
         kode: lansia.kode,
         nama: lansia.nama,
         tanggalLahir: lansia.tanggalLahir,
+        gender: lansia.gender as 'L' | 'P',
       })
     );
 
